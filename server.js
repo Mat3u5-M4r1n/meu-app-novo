@@ -150,18 +150,23 @@ function dbFor(accessToken) {
 
 // ── AUTH MIDDLEWARE ───────────────────────────────────────────────────────────
 async function requireAuth(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Não autenticado' });
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Não autenticado' });
+    }
+    const token = authHeader.slice(7);
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user) return res.status(401).json({ error: 'Token inválido ou expirado' });
+    const rbac = USERS[user.email];
+    if (!rbac) return res.status(403).json({ error: 'Acesso não autorizado para este e-mail' });
+    req.user = { email: user.email, ...rbac };
+    req.db = dbFor(token);
+    next();
+  } catch (err) {
+    console.error('[requireAuth]', err);
+    res.status(500).json({ error: 'Erro interno de autenticação: ' + err.message });
   }
-  const token = authHeader.slice(7);
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-  if (error || !user) return res.status(401).json({ error: 'Token inválido ou expirado' });
-  const rbac = USERS[user.email];
-  if (!rbac) return res.status(403).json({ error: 'Acesso não autorizado para este e-mail' });
-  req.user = { email: user.email, ...rbac };
-  req.db = dbFor(token);
-  next();
 }
 
 // ── AUTH ROUTES ───────────────────────────────────────────────────────────────
@@ -251,9 +256,9 @@ app.put('/api/clientes/:id', async (req, res) => {
   const { data, error } = await req.db
     .from('clientes').update(row).eq('id', id).select().single();
   if (error) {
-    console.error('[PUT /api/clientes/:id]', error);
-    return res.status(error.code === 'PGRST116' ? 404 : 500)
-      .json({ error: error.message || 'Cliente não encontrado' });
+    console.error('[PUT /api/clientes/:id]', JSON.stringify(error));
+    const status = error.code === 'PGRST116' ? 404 : 500;
+    return res.status(status).json({ error: `[${error.code}] ${error.message}` });
   }
 
   // Audit log: registra campos alterados na historico_timeline
@@ -354,9 +359,9 @@ app.put('/api/clientes-blv/:id', async (req, res) => {
   const { data, error } = await req.db
     .from('clientes_blv').update(row).eq('id', id).select().single();
   if (error) {
-    console.error('[PUT /api/clientes-blv/:id]', error);
-    return res.status(error.code === 'PGRST116' ? 404 : 500)
-      .json({ error: error.message || 'Cliente BLV não encontrado' });
+    console.error('[PUT /api/clientes-blv/:id]', JSON.stringify(error));
+    const status = error.code === 'PGRST116' ? 404 : 500;
+    return res.status(status).json({ error: `[${error.code}] ${error.message}` });
   }
 
   if (oldRecord.cnpj) {
@@ -659,7 +664,15 @@ app.delete('/api/base-conhecimento/:id', async (req, res) => {
 });
 
 // ── CHAT AGENTE IA (RAG com Gemini) ──────────────────────────────────────────
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// Lazy init — avoids crash on startup when GEMINI_API_KEY is absent
+let _genAI = null;
+function getGenAI() {
+  if (!_genAI) {
+    if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY não configurada.');
+    _genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  }
+  return _genAI;
+}
 
 app.post('/api/chat-agente', requireAuth, async (req, res) => {
   const { pergunta, historico = [] } = req.body;
@@ -692,7 +705,7 @@ ${contexto.length > 0
   : 'ATENÇÃO: Não há documentos na base de conhecimento ainda. Informe o usuário que a base está vazia e que um admin precisa fazer o upload de documentos.'}`;
 
   try {
-    const model = genAI.getGenerativeModel({
+    const model = getGenAI().getGenerativeModel({
       model: 'gemini-2.5-flash',
       systemInstruction: systemPrompt
     });
@@ -713,6 +726,13 @@ ${contexto.length > 0
     console.error('[chat-agente Gemini]', err);
     res.status(500).json({ error: 'Erro ao chamar a API do Gemini. Verifique a chave.' });
   }
+});
+
+// ── GLOBAL ERROR HANDLER ─────────────────────────────────────────────────────
+// Must be last middleware — catches errors forwarded via next(err)
+app.use((err, req, res, _next) => {
+  console.error('[UNHANDLED]', err);
+  res.status(500).json({ error: err.message || 'Erro interno do servidor' });
 });
 
 // ── START ─────────────────────────────────────────────────────────────────────
