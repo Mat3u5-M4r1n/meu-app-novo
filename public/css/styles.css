@@ -1,0 +1,338 @@
+:root {
+  --bg-main: #F4F4F4;
+  --bg-sidebar: #002726;
+  --accent-green: #93F574;
+  --accent-purple: #7F76FF;
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-dark: #1a1a1a;
+  --sidebar-width: 260px;
+  --sidebar-width-collapsed: 80px;
+  --transition-speed: 0.3s;
+  --ease-apple: cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-dark);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* Segmented Control */
+.segmented-control {
+  display: inline-flex;
+  background-color: #E8E8E8;
+  padding: 4px;
+  border-radius: 12px;
+}
+
+.segment-btn {
+  background: transparent;
+  border: none;
+  color: #666666;
+  padding: 6px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.segment-btn:hover {
+  color: var(--bg-sidebar);
+}
+
+.segment-btn.active,
+.segment-btn.bg-white {
+  background-color: white;
+  color: var(--bg-sidebar);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+}
+
+/* Campo preenchido automaticamente via Jestor/automação — somente leitura para IG */
+.field-auto {
+  background-color: #f5f6f5 !important;
+  color: #999 !important;
+  cursor: not-allowed !important;
+  border-color: #e0e0e0 !important;
+}
+.field-auto::placeholder { color: #ccc !important; }
+select.field-auto { pointer-events: none; }
+
+/* Badges */
+.badge-green {
+  background: rgba(147, 245, 116, 0.2);
+  color: #00403e;
+}
+
+.badge-purple {
+  background: rgba(127, 118, 255, 0.15);
+  color: #4a41cc;
+}
+
+/* Kanban card drag */
+.kanban-drag-over {
+  border-color: #7F76FF !important;
+  box-shadow: 0 0 0 2px rgba(127,118,255,0.2) !important;
+}
+
+/* Scrollbar customization */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Table row hover */
+#table-body tr:hover {
+  background-color: #f8fafc;
+  cursor: pointer;
+}
+
+/* Kanban column max height fix */
+#kanban-board-container {
+  min-height: 0;
+}
+
+/* View section full height */
+.view-section {
+  min-height: 0;
+}
+
+/* Utility */
+.shadow-2xs {
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.shadow-xs {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* Backdrop blur fix for older browsers */
+@supports not (backdrop-filter: blur(4px)) {
+  .backdrop-blur-sm {
+    background-color: rgba(0, 39, 38, 0.6);
+  }
+}
+
+/* ─── DARK THEME (somente no conteúdo principal) ──────────────────────────── */
+
+/* Botão de toggle */
+.theme-toggle-btn {
+  background: #f4f4f4;
+  border-color: #e0e0e0;
+  color: #555;
+}
+.theme-toggle-btn:hover {
+  background: #ebebeb;
+  border-color: #ccc;
+}
+
+#main-content[data-theme="dark"] .theme-toggle-btn {
+  background: #2a2a2a;
+  border-color: #444;
+}
+
+/* Variáveis dark */
+#main-content[data-theme="dark"] {
+  --dk-bg: #111214;
+  --dk-surface: #1a1b1e;
+  --dk-surface2: #222428;
+  --dk-border: #2e3035;
+  --dk-text: #e2e4e9;
+  --dk-text-sub: #8b8fa8;
+  --dk-text-muted: #5a5e72;
+  background-color: var(--dk-bg) !important;
+  transition: background-color 0.25s ease;
+}
+
+/* Topbar */
+#main-content[data-theme="dark"] header {
+  background-color: var(--dk-surface) !important;
+  border-color: var(--dk-border) !important;
+}
+#main-content[data-theme="dark"] header input,
+#main-content[data-theme="dark"] header select {
+  background-color: var(--dk-surface2) !important;
+  border-color: var(--dk-border) !important;
+  color: var(--dk-text) !important;
+}
+#main-content[data-theme="dark"] header input::placeholder {
+  color: var(--dk-text-muted) !important;
+}
+
+/* Footer */
+#main-content[data-theme="dark"] footer {
+  background-color: var(--dk-surface) !important;
+  border-color: var(--dk-border) !important;
+  color: var(--dk-text-sub) !important;
+}
+#main-content[data-theme="dark"] footer strong {
+  color: var(--dk-text) !important;
+}
+
+/* Toolbar do Kanban */
+#main-content[data-theme="dark"] .bg-white {
+  background-color: var(--dk-surface) !important;
+  color: var(--dk-text) !important;
+}
+#main-content[data-theme="dark"] .bg-\[\#f8fafc\],
+#main-content[data-theme="dark"] .bg-\[\#fafafa\],
+#main-content[data-theme="dark"] .bg-\[\#f4f4f4\],
+#main-content[data-theme="dark"] .bg-\[\#F4F4F4\],
+#main-content[data-theme="dark"] .bg-\[\#fcfcfc\],
+#main-content[data-theme="dark"] .bg-\[\#f9f9f9\],
+#main-content[data-theme="dark"] .bg-\[\#f9fcfa\] {
+  background-color: var(--dk-surface2) !important;
+}
+#main-content[data-theme="dark"] .bg-\[\#f0f0f0\],
+#main-content[data-theme="dark"] .bg-\[\#eee\]\/80,
+#main-content[data-theme="dark"] .bg-\[\#eee\] {
+  background-color: #2e3035 !important;
+}
+
+/* Bordas */
+#main-content[data-theme="dark"] .border-\[\#eee\],
+#main-content[data-theme="dark"] .border-\[\#e8e8e8\],
+#main-content[data-theme="dark"] .border-\[\#e0e0e0\],
+#main-content[data-theme="dark"] .border-\[\#e2e8f0\],
+#main-content[data-theme="dark"] .border-\[\#ddd\] {
+  border-color: var(--dk-border) !important;
+}
+
+/* Textos */
+#main-content[data-theme="dark"] .text-\[\#002726\] {
+  color: #e2e4e9 !important;
+}
+#main-content[data-theme="dark"] .text-\[\#1a1a1a\] {
+  color: #e2e4e9 !important;
+}
+#main-content[data-theme="dark"] .text-\[\#555\],
+#main-content[data-theme="dark"] .text-\[\#666\] {
+  color: var(--dk-text-sub) !important;
+}
+#main-content[data-theme="dark"] .text-\[\#888\],
+#main-content[data-theme="dark"] .text-\[\#aaa\],
+#main-content[data-theme="dark"] .text-\[\#999\] {
+  color: var(--dk-text-muted) !important;
+}
+
+/* Kanban board background */
+#main-content[data-theme="dark"] #kanban-board-container {
+  background-color: var(--dk-bg) !important;
+}
+
+/* Kanban colunas */
+#main-content[data-theme="dark"] #kanban-board-container > div {
+  background-color: var(--dk-surface) !important;
+  border-color: var(--dk-border) !important;
+}
+
+/* Cards kanban */
+#main-content[data-theme="dark"] [id^="card-"] {
+  background-color: var(--dk-surface2) !important;
+  border-color: var(--dk-border) !important;
+}
+#main-content[data-theme="dark"] [id^="card-"]:hover {
+  border-color: #7F76FF !important;
+}
+
+/* Selects dentro dos cards */
+#main-content[data-theme="dark"] select {
+  background-color: var(--dk-surface2) !important;
+  border-color: var(--dk-border) !important;
+  color: var(--dk-text) !important;
+}
+
+/* Toolbar buttons */
+#main-content[data-theme="dark"] .bg-\[\#f9f9f9\]:not([id^="card-"]),
+#main-content[data-theme="dark"] .bg-\[\#f3f3f3\] {
+  background-color: var(--dk-surface2) !important;
+}
+
+/* Segmented control */
+#main-content[data-theme="dark"] .segmented-control {
+  background-color: #2a2b30 !important;
+}
+#main-content[data-theme="dark"] .segment-btn {
+  color: var(--dk-text-sub) !important;
+}
+#main-content[data-theme="dark"] .segment-btn.active,
+#main-content[data-theme="dark"] .segment-btn.bg-white {
+  background-color: var(--dk-surface2) !important;
+  color: var(--dk-text) !important;
+}
+
+/* Tabela */
+#main-content[data-theme="dark"] #table-body tr:hover {
+  background-color: var(--dk-surface2) !important;
+}
+#main-content[data-theme="dark"] #table-head,
+#main-content[data-theme="dark"] thead {
+  background-color: var(--dk-surface) !important;
+}
+#main-content[data-theme="dark"] #table-head th,
+#main-content[data-theme="dark"] thead th {
+  color: var(--dk-text-sub) !important;
+}
+#main-content[data-theme="dark"] #table-body td {
+  color: var(--dk-text-sub) !important;
+  border-color: var(--dk-border) !important;
+}
+#main-content[data-theme="dark"] #table-body tr td:first-child,
+#main-content[data-theme="dark"] #table-body tr td.font-bold {
+  color: var(--dk-text) !important;
+}
+
+/* Cards de agenda e métricas */
+#main-content[data-theme="dark"] .rounded-2xl.bg-white,
+#main-content[data-theme="dark"] .rounded-xl.bg-white {
+  background-color: var(--dk-surface) !important;
+  border-color: var(--dk-border) !important;
+}
+
+/* Inputs e textareas */
+#main-content[data-theme="dark"] input:not([type="checkbox"]),
+#main-content[data-theme="dark"] textarea {
+  background-color: var(--dk-surface2) !important;
+  border-color: var(--dk-border) !important;
+  color: var(--dk-text) !important;
+}
+
+/* Popovers (kanban views, columns, fields) */
+#main-content[data-theme="dark"] #popover-kanban-views,
+#main-content[data-theme="dark"] #popover-kanban-columns,
+#main-content[data-theme="dark"] #popover-card-fields {
+  background-color: var(--dk-surface) !important;
+  border-color: var(--dk-border) !important;
+}
+#main-content[data-theme="dark"] #popover-kanban-views div,
+#main-content[data-theme="dark"] #popover-kanban-columns div {
+  color: var(--dk-text) !important;
+}
+
+/* Área de agenda com fundo gradiente do header — manter */
+#main-content[data-theme="dark"] #agenda-view-container,
+#main-content[data-theme="dark"] #metrics-view-container,
+#main-content[data-theme="dark"] #settings-view-container {
+  background-color: var(--dk-bg) !important;
+}
+
+/* Scrollbar dark */
+#main-content[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #3a3d4a;
+}
+#main-content[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #4a4d5c;
+}

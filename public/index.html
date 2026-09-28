@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bling LINK Operacional</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/styles.css" />
+  <link rel="icon" href="/logo-bling.svg" type="image/svg+xml" />
+  <script>document.documentElement.style.visibility='hidden';</script>
+</head>
+<body class="bg-[#F4F4F4] text-[#1a1a1a] font-sans antialiased overflow-hidden">
+
+<div class="flex h-screen w-screen overflow-hidden">
+
+  <!-- MENU LATERAL -->
+  <aside id="main-sidebar" class="h-screen bg-[#002726] text-white flex flex-col transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] shadow-[4px_0_24px_rgba(0,39,38,0.08)] z-30 select-none w-[260px]">
+    <!-- Cabeçalho da Sidebar -->
+    <div id="sidebar-header" class="flex items-center justify-between p-6 pb-4 border-b border-white/5">
+      <div class="flex items-center gap-3 overflow-hidden cursor-pointer" onclick="navigateToView('pipeline')">
+        <img src="/logo-bling.svg" alt="Bling" class="w-9 h-9 shrink-0 rounded-xl shadow-md" />
+        <div id="sidebar-title-container" class="flex flex-col min-w-0">
+          <span class="text-[17px] font-semibold tracking-tight text-white leading-tight">LINK</span>
+          <span class="text-[10px] text-white/70 font-normal tracking-wide">Implantação Guiada</span>
+        </div>
+      </div>
+      <button id="btn-toggle-sidebar" onclick="toggleSidebarCollapse()" class="p-1 rounded-lg text-white/70 hover:text-[#93F574] hover:bg-white/5 transition-all" title="Recolher Menu">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+      </button>
+    </div>
+    <!-- Links de Navegação -->
+    <div class="flex-1 py-4 px-3 flex flex-col gap-1.5 overflow-y-auto">
+      <!-- Team Selector -->
+      <div id="sidebar-team-section" class="mb-1">
+        <div class="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-white/50">Time</div>
+        <select id="sidebar-team-select" onchange="onTeamChange(this.value)" class="w-full bg-white/10 text-white text-xs rounded-xl px-3 py-2 border border-white/20 outline-none cursor-pointer">
+          <option value="ig" style="color:#1a1a1a;background:#fff;">🚀 Implantação Guiada</option>
+          <option value="blv" style="color:#1a1a1a;background:#fff;">🛒 Bling Loja Virtual</option>
+        </select>
+      </div>
+      <div id="sidebar-modules-label" class="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-white/50">Módulos</div>
+      <button id="nav-item-pipeline" onclick="navigateToView('pipeline')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all bg-[#93F574] text-[#002726] shadow-[0_2px_8px_rgba(147,245,116,0.3)]">
+        <svg class="w-4 h-4 shrink-0 text-[#002726]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+        <span class="nav-text truncate">Kanban</span>
+        <span id="badge-total-count" class="ml-auto text-[10px] px-2 py-0.5 rounded-full font-bold bg-[#002726]/20 text-[#002726]">0</span>
+      </button>
+      <button id="nav-item-lista" onclick="navigateToView('lista')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all text-white/70 hover:bg-white/5 hover:text-white">
+        <svg class="w-4 h-4 shrink-0 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        <span class="nav-text truncate">Planilha</span>
+      </button>
+      <button id="nav-item-agenda" onclick="navigateToView('agenda')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all text-white/70 hover:bg-white/5 hover:text-white">
+        <svg class="w-4 h-4 shrink-0 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        <span class="nav-text truncate">Agenda</span>
+      </button>
+      <button id="nav-item-relatorios" onclick="navigateToView('relatorios')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all text-white/70 hover:bg-white/5 hover:text-white">
+        <svg class="w-4 h-4 shrink-0 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        <span class="nav-text truncate">Métricas & Indicadores</span>
+      </button>
+      <button id="nav-item-atividades" onclick="navigateToView('atividades')" class="blv-only hidden w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all text-white/70 hover:bg-white/5 hover:text-white">
+        <svg class="w-4 h-4 shrink-0 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+        <span class="nav-text truncate">Atividades</span>
+        <span id="badge-atividades-count" class="ml-auto text-[10px] px-2 py-0.5 rounded-full font-bold bg-white/10 text-white/80 hidden">0</span>
+      </button>
+      <button id="nav-item-projetos" onclick="navigateToView('projetos')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all text-white/70 hover:bg-white/5 hover:text-white">
+        <svg class="w-4 h-4 shrink-0 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+        <span class="nav-text truncate">Solicitações Internas</span>
+      </button>
+      <button id="nav-item-ajustes" onclick="navigateToView('ajustes')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all text-white/70 hover:bg-white/5 hover:text-white">
+        <svg class="w-4 h-4 shrink-0 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <span class="nav-text truncate">Ajustes & Importação</span>
+      </button>
+      <button id="nav-item-base-conhecimento" onclick="navigateToView('base-conhecimento')" class="admin-only w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all text-white/70 hover:bg-white/5 hover:text-white">
+        <svg class="w-4 h-4 shrink-0 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+        <span class="nav-text truncate">Base de Conhecimento</span>
+      </button>
+      <!-- Suporte -->
+      <div class="px-3 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-white/40">Suporte</div>
+      <button id="nav-item-ajuda" onclick="navigateToView('ajuda')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all text-white/70 hover:bg-white/5 hover:text-white">
+        <svg class="w-4 h-4 shrink-0 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span class="nav-text truncate">Central de Ajuda</span>
+      </button>
+      <button id="nav-item-docs" onclick="navigateToView('docs')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all text-white/70 hover:bg-white/5 hover:text-white">
+        <svg class="w-4 h-4 shrink-0 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <span class="nav-text truncate">Documentação</span>
+      </button>
+
+      <!-- Box Operacional -->
+      <div id="sidebar-operational-box" class="mt-auto pt-4 border-t border-white/5 flex flex-col gap-2">
+        <div class="px-3 text-[10px] font-semibold uppercase tracking-wider text-white/50">Operacional do Dia</div>
+        <div class="p-3 rounded-xl bg-white/[0.04] border border-white/5 flex flex-col gap-2 text-xs">
+          <div class="flex items-center justify-between text-white/80"><span class="text-xs">Hoje:</span><span id="sb-stat-hoje" class="font-bold text-[#93F574]">0</span></div>
+          <div class="flex items-center justify-between text-white/80"><span class="text-xs">Em andamento:</span><span id="sb-stat-andamento" class="font-bold text-[#38BDF8]">0</span></div>
+          <div class="flex items-center justify-between text-white/80"><span class="text-xs">Enviar Gravação:</span><span id="sb-stat-gravacao" class="font-bold text-[#7F76FF]">0</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- Rodapé Usuário -->
+    <div class="p-3 border-t border-white/5 bg-black/20 shrink-0">
+      <div class="flex items-center gap-2 px-1">
+        <div id="sidebar-user-avatar" class="w-8 h-8 rounded-xl bg-gradient-to-br from-[#93F574] to-[#7F76FF] text-[#002726] font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">?</div>
+        <div id="sidebar-user-info" class="flex flex-col min-w-0 flex-1">
+          <span id="sidebar-user-name" class="text-xs font-semibold text-white truncate leading-tight">Carregando...</span>
+          <span id="sidebar-user-email" class="text-[10px] text-white/60 truncate"></span>
+        </div>
+        <button onclick="handleLogout()" title="Sair" class="w-7 h-7 rounded-lg flex items-center justify-center text-white/50 hover:text-rose-400 hover:bg-white/5 transition-all shrink-0">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <div id="main-content" class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+    <!-- BARRA SUPERIOR (Topbar) -->
+    <header class="h-[52px] bg-white border-b border-[#eee] flex items-center px-4 gap-3 shrink-0 select-none">
+      <div class="flex items-center gap-2 flex-1">
+        <!-- Search -->
+        <div class="relative">
+          <input type="text" id="topbar-search" oninput="onSearchInput()" placeholder="Buscar empresa, contato..." class="bg-[#f4f4f4] border border-[#e0e0e0] rounded-xl py-1.5 pl-8 pr-4 text-xs text-[#1a1a1a] placeholder:text-[#888] outline-none focus:border-[#7F76FF] transition-all w-64" />
+          <svg class="w-3.5 h-3.5 text-[#888] absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+        <!-- Implantador Filter -->
+        <select id="topbar-implantador-filter" onchange="onImplantadorFilterChange()" class="bg-[#f4f4f4] border border-[#e0e0e0] rounded-xl py-1.5 px-3 text-xs text-[#555] outline-none focus:border-[#7F76FF] cursor-pointer">
+          <option value="todos">Todos os implantadores</option>
+        </select>
+      </div>
+      <!-- Topbar Badge -->
+      <div id="topbar-view-badge" class="hidden items-center gap-2">
+        <span id="topbar-badge-label" class="text-[11px] font-semibold text-[#666] bg-[#f0f0f0] px-2.5 py-1 rounded-lg"></span>
+      </div>
+      <!-- Dark/Light Toggle -->
+      <button id="btn-theme-toggle" onclick="toggleMainTheme()" title="Alternar tema claro/escuro" class="w-8 h-8 rounded-xl flex items-center justify-center border transition-all cursor-pointer shrink-0 theme-toggle-btn">
+        <span id="theme-icon-sun" class="text-base leading-none">☀️</span>
+        <span id="theme-icon-moon" class="text-base leading-none hidden">🌙</span>
+      </button>
+    </header>
+
+    <!-- ÁREA DAS VIEWS -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+      <!-- View 1: KANBAN -->
+      <div id="view-section-pipeline" class="view-section flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#F4F4F4]">
+          <!-- Toolbar Kanban -->
+          <div class="px-4 py-2 bg-white border-b border-[#e2e8f0] flex items-center justify-between gap-3 shrink-0 flex-wrap text-xs select-none min-h-[44px]">
+            <div class="flex items-center gap-2">
+              <div class="relative inline-block">
+                <button type="button" onclick="toggleKanbanViewsDropdown(event)" class="flex items-center gap-2 bg-[#f9f9f9] hover:bg-[#f3f3f3] border border-[#e5e5e5] rounded-xl px-3 py-1.5 transition-all shadow-xs cursor-pointer text-[#002726]">
+                  <svg class="w-4 h-4 text-[#7F76FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                  <span id="lbl-kanban-active-view" class="text-xs font-semibold max-w-[160px] truncate">Visualizações: Todas</span>
+                  <svg class="w-3.5 h-3.5 text-[#64748b]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div id="popover-kanban-views" onclick="event.stopPropagation()" class="hidden absolute left-0 mt-2 w-80 bg-white rounded-2xl shadow-[0_16px_50px_rgba(0,0,0,0.22)] border border-[#e5e5e5] z-50 overflow-hidden text-xs">
+                  <div class="p-3 border-b border-[#eee] bg-[#fafafa] flex items-center justify-between"><span class="font-bold text-[#002726]">Visualizações do Kanban</span></div>
+                  <div id="list-kanban-custom-views" class="p-3 space-y-1.5 max-h-60 overflow-y-auto"></div>
+                  <div class="p-3 bg-[#fafafa] border-t border-[#eee] space-y-2">
+                    <input type="text" id="input-kanban-view-name" placeholder="Ex: Minha Operação..." class="w-full bg-white border border-[#ddd] rounded-xl px-2.5 py-1.5 text-xs text-[#1a1a1a] outline-none focus:border-[#7F76FF]" />
+                    <button type="button" onclick="saveKanbanCustomViewHandler(event)" class="w-full py-2 bg-[#002726] hover:bg-[#003835] text-[#93F574] rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer">Salvar como Nova Visualização</button>
+                  </div>
+                </div>
+              </div>
+              <!-- Colunas Dropdown -->
+              <div class="relative inline-block">
+                <button type="button" onclick="toggleKanbanColumnsDropdown(event)" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all select-none shadow-xs shrink-0 bg-[#f9f9f9] hover:bg-[#f3f3f3] text-[#002726] border-[#e5e5e5] cursor-pointer">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2m0 10V7"/></svg>
+                  <span id="lbl-kanban-cols-count">Colunas (0)</span>
+                </button>
+                <div id="popover-kanban-columns" class="hidden absolute left-0 mt-2 w-80 bg-white rounded-2xl shadow-[0_16px_50px_rgba(0,0,0,0.22)] border border-[#e5e5e5] z-50 overflow-hidden flex flex-col max-h-[85vh]">
+                  <div class="p-3 border-b border-[#eee] bg-[#fafafa]">
+                    <div class="flex items-center justify-between mb-2"><span class="font-bold text-xs text-[#002726]">Situações do Kanban</span><button type="button" onclick="resetDefaultKanbanColumns()" class="text-[11px] font-semibold text-[#666] hover:text-[#002726] cursor-pointer">Padrão</button></div>
+                    <input type="text" id="input-search-kanban-cols" oninput="renderKanbanColumnsDropdownLists()" placeholder="Buscar situação..." class="w-full bg-white border border-[#e5e5e5] rounded-xl py-1.5 px-3 text-xs outline-none focus:border-[#7F76FF]" />
+                  </div>
+                  <div class="overflow-y-auto flex-1 divide-y divide-[#f0f0f0] text-xs">
+                    <div class="p-3"><div class="flex items-center justify-between mb-2 px-1"><span class="font-semibold text-[#555]">Mostradas</span><button type="button" onclick="hideAllKanbanColumns()" class="text-[#2563eb] hover:underline cursor-pointer">Ocultar tudo</button></div><div id="list-visible-kanban-cols" class="space-y-1"></div></div>
+                    <div class="p-3"><div class="flex items-center justify-between mb-2 px-1"><span class="font-semibold text-[#555]">Ocultas</span><button type="button" onclick="showAllKanbanColumns()" class="text-[#2563eb] hover:underline cursor-pointer">Mostrar tudo</button></div><div id="list-hidden-kanban-cols" class="space-y-1"></div></div>
+                  </div>
+                </div>
+              </div>
+              <!-- Campos Dropdown -->
+              <div class="relative inline-block text-left">
+                <button type="button" id="btn-toggle-card-fields" onclick="toggleCardFieldsDropdown(event)" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all select-none shadow-xs shrink-0 bg-white hover:bg-[#fafafa] text-[#002726] border-[#eee] cursor-pointer">
+                  <svg class="w-4 h-4 text-[#7F76FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                  <span class="hidden sm:inline">Campos</span>
+                  <span id="lbl-active-fields-count" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#f0f0f0] text-[#444]">0/0</span>
+                </button>
+                <div id="popover-card-fields" class="hidden absolute left-0 mt-2 w-84 sm:w-96 bg-white rounded-2xl shadow-2xl border border-[#e0e0e0] z-50 p-4 flex-col max-h-[85vh] text-xs">
+                  <div class="flex items-center justify-between pb-2.5 border-b border-[#eee] shrink-0">
+                    <div><h3 class="text-xs font-bold text-[#002726]">Campos no Card Kanban</h3><p class="text-[11px] text-[#666] mt-0.5">Selecione os dados que deseja ver.</p></div>
+                    <button type="button" onclick="resetDefaultCardFields()" class="text-[10px] text-[#7F76FF] hover:text-[#5e53ff] font-bold flex items-center gap-1 px-2 py-1 rounded hover:bg-[#7F76FF]/10 transition-colors shrink-0 cursor-pointer">Padrão</button>
+                  </div>
+                  <div class="pt-2.5 pb-2 shrink-0"><input type="text" id="input-search-card-fields" oninput="renderCardFieldsList()" placeholder="Buscar campo..." class="w-full bg-[#fafafa] border border-[#e5e5e5] rounded-xl py-1.5 pl-3 pr-3 text-xs outline-none focus:border-[#7F76FF]" /></div>
+                  <div id="container-category-chips" class="flex items-center gap-1 overflow-x-auto pb-2 shrink-0"></div>
+                  <div id="list-card-fields-container" class="py-1 overflow-y-auto space-y-1 pr-1 flex-1 min-h-[160px] max-h-[340px]"></div>
+                  <div class="pt-2.5 mt-1 border-t border-[#eee] flex items-center justify-between text-xs shrink-0">
+                    <div class="flex items-center gap-3"><button type="button" onclick="selectAllCardFields()" class="text-[11px] font-bold text-[#002726] hover:underline cursor-pointer">Marcar Todos</button><button type="button" onclick="deselectAllCardFields()" class="text-[11px] font-medium text-[#666] hover:underline cursor-pointer">Limpar</button></div>
+                    <span id="txt-footer-fields-count" class="text-[11px] font-medium text-[#777]">0 de 0 visíveis</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="text-[11px] font-semibold text-[#64748b]">Exibindo <span id="lbl-kanban-total-cards" class="text-[#002726] font-bold">0</span> cartões</div>
+              <button type="button" onclick="abrirModalNovoCliente()" class="flex items-center gap-1.5 px-3 py-1.5 bg-[#002726] hover:bg-[#003835] text-[#93F574] rounded-xl text-xs font-bold cursor-pointer transition-colors shadow-xs">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Novo Registro
+              </button>
+            </div>
+          </div>
+          <!-- Board Container -->
+          <div id="kanban-board-container" class="flex-1 overflow-x-auto p-4 bg-[#F4F4F4] flex gap-3.5 select-none items-start"></div>
+        </div>
+      </div>
+
+      <!-- View 2: PLANILHA -->
+      <div id="view-section-lista" class="view-section hidden flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">
+          <div class="px-4 py-2 bg-[#f8fafc] border-b border-[#e2e8f0] flex items-center justify-between gap-3 shrink-0 flex-wrap text-xs min-h-[44px]">
+            <span class="font-bold text-[#002726] text-sm">Planilha de Clientes</span>
+            <span id="lbl-table-count" class="text-[11px] text-[#666]">0 registros</span>
+          </div>
+          <div class="flex-1 overflow-auto">
+            <table class="w-full text-left text-xs border-collapse" id="table-clientes">
+              <thead id="table-head" class="bg-[#fafafa] border-b border-[#eee] text-[11px] font-bold text-[#666] uppercase sticky top-0"></thead>
+              <tbody id="table-body" class="divide-y divide-[#eee]"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- View 3: AGENDA -->
+      <div id="view-section-agenda" class="view-section hidden flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div id="agenda-view-container" class="p-6 bg-[#F4F4F4] flex-1 overflow-y-auto">
+          <div class="max-w-6xl mx-auto space-y-5">
+            <div class="bg-[#002726] rounded-2xl p-5 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-[0_8px_32px_rgba(0,39,38,0.15)]">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#93F574] to-[#7F76FF] text-[#002726] flex items-center justify-center font-bold shrink-0 shadow-md"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>
+                <div><h2 class="text-base font-bold tracking-tight text-white">Agenda Operacional de Implantação Guiada</h2><p class="text-xs text-white/70">Acompanhamento dinâmico das sessões do dia</p></div>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="bg-white/10 px-4 py-2 rounded-xl text-center min-w-[80px]"><span id="agenda-count-hoje" class="text-xl font-bold text-[#93F574] leading-none block font-mono">0</span><span class="text-[10px] text-white/70 uppercase font-bold tracking-wider">Hoje</span></div>
+                <div class="bg-white/10 px-4 py-2 rounded-xl text-center min-w-[80px]"><span id="agenda-count-futuros" class="text-xl font-bold text-[#7F76FF] leading-none block font-mono">0</span><span class="text-[10px] text-white/70 uppercase font-bold tracking-wider">Futuros</span></div>
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl border border-[#eee] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+              <div class="flex items-center justify-between mb-4 border-b border-[#eee] pb-3"><div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-[#93F574] animate-pulse"></span><h3 id="title-hoje-count" class="font-bold text-sm text-[#002726] uppercase tracking-wide">Atendimentos Agendados para Hoje (0)</h3></div><span class="text-[11px] font-bold px-3 py-1 rounded-full bg-[#93F574]/20 text-[#002726] border border-[#93F574]/40">PRIORIDADE MÁXIMA</span></div>
+              <div id="grid-hoje-container"></div>
+            </div>
+            <div class="bg-white rounded-2xl border border-[#eee] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+              <div class="flex items-center justify-between mb-4 border-b border-[#eee] pb-3"><h3 id="title-futuros-count" class="font-bold text-sm text-[#002726] uppercase tracking-wide flex items-center gap-2"><svg class="w-4 h-4 text-[#7F76FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Próximos Dias Agendados (0)</h3></div>
+              <div id="grid-futuros-container"></div>
+            </div>
+            <div class="bg-white rounded-2xl border border-[#eee] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+              <div class="flex items-center justify-between mb-4 border-b border-[#eee] pb-3"><h3 id="title-pendentes-count" class="font-bold text-sm text-[#002726] uppercase tracking-wide flex items-center gap-2"><svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>Aguardando Escolha de Data / Link Enviado (0)</h3></div>
+              <div id="grid-pendentes-container"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- View 4: MÉTRICAS -->
+      <div id="view-section-relatorios" class="view-section hidden flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div id="metrics-view-container" class="p-6 bg-[#F4F4F4] flex-1 overflow-y-auto">
+          <div class="max-w-6xl mx-auto space-y-5">
+            <div><h2 class="text-base font-bold text-[#002726] tracking-tight flex items-center gap-2"><svg class="w-5 h-5 text-[#7F76FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>Indicadores & Performance Operacional IG</h2><p class="text-xs text-[#666]">Métricas de conversão, reagendamentos, carteira por implantador e receita</p></div>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="bg-white rounded-2xl border border-[#eee] p-4 shadow-2xs"><div class="text-[11px] font-bold text-[#666] uppercase mb-1">Total de Processos</div><div id="kpi-total-processos" class="text-2xl font-bold font-mono text-[#002726]">0</div><div id="kpi-em-andamento-sub" class="text-xs text-[#666] mt-1">0 em andamento</div></div>
+              <div class="bg-white rounded-2xl border border-[#eee] p-4 shadow-2xs"><div class="text-[11px] font-bold text-[#666] uppercase mb-1">Taxa de Conclusão</div><div id="kpi-taxa-conclusao" class="text-2xl font-bold font-mono text-emerald-700">0%</div><div id="kpi-concluidos-sub" class="text-xs text-[#666] mt-1">0 finalizados</div></div>
+              <div class="bg-white rounded-2xl border border-[#eee] p-4 shadow-2xs"><div class="text-[11px] font-bold text-[#666] uppercase mb-1">Reagendamentos</div><div id="kpi-total-reagendas" class="text-2xl font-bold font-mono text-orange-700">0</div><div class="text-xs text-[#666] mt-1">Solicitaram nova data</div></div>
+              <div class="bg-white rounded-2xl border border-[#eee] p-4 shadow-2xs"><div class="text-[11px] font-bold text-[#666] uppercase mb-1">Volume Financeiro IG</div><div id="kpi-volume-financeiro" class="text-2xl font-bold font-mono text-[#002726]">R$ 0,00</div><div id="kpi-taxa-estorno-sub" class="text-xs text-[#666] mt-1">Taxa de estorno: 0%</div></div>
+            </div>
+            <div class="bg-white rounded-2xl border border-amber-200/80 p-5 shadow-2xs">
+              <div class="flex items-center justify-between mb-3"><h3 class="text-xs font-bold text-[#002726] uppercase tracking-wide flex items-center gap-2">Pendências Operacionais <span id="badge-pendencias-count" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white font-mono">0</span></h3><span class="text-[11px] text-[#666]">Reuniões atrasadas ou pendentes de gravação</span></div>
+              <div id="container-pendencias-table"></div>
+            </div>
+            <div class="bg-white rounded-2xl border border-[#eee] p-5 shadow-2xs"><h3 class="text-xs font-bold text-[#002726] uppercase tracking-wide mb-3">Distribuição por Status</h3><div id="container-status-distribution" class="space-y-3"></div></div>
+            <div class="bg-white rounded-2xl border border-[#eee] p-5 shadow-2xs">
+              <h3 class="text-xs font-bold text-[#002726] uppercase tracking-wide mb-3">Desempenho por Implantador</h3>
+              <div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="bg-[#fafafa] border-b border-[#eee] text-[11px] font-bold text-[#666] uppercase"><tr><th class="px-4 py-2">Implantador</th><th class="px-4 py-2">Total</th><th class="px-4 py-2">Concluídos</th><th class="px-4 py-2">Taxa</th></tr></thead><tbody id="tbl-implantadores-body" class="divide-y divide-[#eee]"></tbody></table></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- View 5: AJUSTES -->
+      <div id="view-section-ajustes" class="view-section hidden flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div id="settings-view-container" class="p-6 bg-[#F4F4F4] flex-1 overflow-y-auto">
+          <div class="max-w-4xl mx-auto space-y-5">
+            <div><h2 class="text-base font-bold text-[#002726] tracking-tight">Ajustes, Importação & Exportação de Dados</h2><p class="text-xs text-[#666]">Importe planilhas de referência no formato da Implantação Guiada ou exporte os dados atuais</p></div>
+            <div class="bg-white rounded-2xl border border-[#eee] p-5 shadow-[0_4px_16px_rgba(0,0,0,0.02)] space-y-4">
+              <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#93F574] to-[#7F76FF] text-[#002726] flex items-center justify-center font-bold"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div><div><h3 class="font-bold text-sm text-[#002726]">Importação / Exportação de Planilha</h3><p class="text-xs text-[#666]">Compatível com todos os campos oficiais da planilha de Implantação Guiada</p></div></div>
+              <div class="flex flex-wrap items-center gap-2.5 pt-2">
+                <input type="file" id="csv-file-input" accept=".csv" onchange="handleCSVFileUpload(event)" class="hidden" />
+                <button onclick="document.getElementById('csv-file-input').click()" class="px-4 py-2 bg-[#002726] hover:bg-[#003835] text-[#93F574] rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs cursor-pointer"><svg class="w-4 h-4 text-[#93F574]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg><span>Carregar Planilha (CSV)</span></button>
+                <button onclick="exportClientesToCSVHandler()" class="px-4 py-2 bg-white hover:bg-[#fafafa] text-[#002726] border border-[#ddd] rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs cursor-pointer"><svg class="w-4 h-4 text-[#7F76FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg><span id="btn-export-label">Exportar Todos (0 registros)</span></button>
+                <button onclick="resetDataHandler()" class="px-3.5 py-2 text-rose-700 hover:bg-rose-50 border border-rose-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors ml-auto cursor-pointer"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg><span>Restaurar Base Padrão</span></button>
+              </div>
+              <div id="csv-preview-container" class="hidden mt-4 p-4 bg-[#fbfdfa] rounded-2xl border border-[#93F574]/40 space-y-3">
+                <div class="flex items-center justify-between"><div class="flex items-center gap-2 text-xs font-bold text-[#002726]"><svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span id="lbl-preview-rows-count">0 linhas identificadas</span></div><button onclick="confirmImportHandler()" class="px-4 py-1.5 bg-[#93F574] hover:bg-[#82e265] text-[#002726] rounded-xl text-xs font-bold shadow-xs cursor-pointer">Confirmar Importação</button></div>
+                <div class="max-h-48 overflow-auto rounded-xl border border-[#eee] bg-white"><table class="w-full text-left text-xs"><thead id="tbl-csv-preview-head" class="bg-[#fafafa] border-b border-[#eee] font-bold text-[#666] text-[10px] uppercase"></thead><tbody id="tbl-csv-preview-body" class="divide-y divide-[#eee]"></tbody></table></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- View 6: ATIVIDADES BLV -->
+      <div id="view-section-atividades" class="view-section hidden flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#F4F4F4]">
+          <!-- Toolbar -->
+          <div class="px-4 py-2 bg-white border-b border-[#e2e8f0] flex items-center gap-3 shrink-0 flex-wrap min-h-[52px]">
+            <input id="atividades-search" type="text" placeholder="Buscar atividade..." oninput="onAtividadesSearch()" class="h-8 px-3 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl text-xs outline-none focus:border-[#7F76FF] w-48 transition-colors" />
+            <select id="atividades-filter-empresa" onchange="onAtividadesFilterChange()" class="h-8 px-2.5 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl text-xs outline-none cursor-pointer focus:border-[#7F76FF]">
+              <option value="todos">Todas as empresas</option>
+            </select>
+            <span class="text-xs text-[#888]"><strong id="atividades-total-badge" class="text-[#002726]">0</strong> atividades</span>
+            <button onclick="abrirModalAtividade(null, null)" class="ml-auto px-4 py-1.5 bg-[#7F76FF] hover:bg-[#6b62e8] text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Nova Atividade
+            </button>
+          </div>
+          <!-- Lista -->
+          <div class="flex-1 overflow-y-auto p-4">
+            <div class="max-w-6xl mx-auto bg-white rounded-2xl border border-[#eee] shadow-[0_2px_12px_rgba(0,0,0,0.03)] overflow-hidden">
+              <div id="atividades-list-container"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- View 7: SOLICITAÇÕES INTERNAS -->
+      <div id="view-section-projetos" class="view-section hidden flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#F4F4F4]">
+          <!-- Toolbar -->
+          <div class="px-4 py-2 bg-white border-b border-[#e2e8f0] flex items-center gap-3 shrink-0 min-h-[52px]">
+            <button id="btn-solicitations-back" onclick="switchProjetosSubView('landing')" class="hidden items-center gap-1.5 text-xs font-semibold text-[#666] hover:text-[#002726] transition-colors cursor-pointer">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+              Voltar
+            </button>
+            <span id="solicitations-view-title" class="font-bold text-sm text-[#002726]">Solicitações Internas</span>
+            <span id="solicitations-list-count" class="hidden text-xs text-[#888]">0 solicitações</span>
+            <input id="solicitations-search" type="text" placeholder="Buscar solicitação..." oninput="renderMinhasSolicitacoes()" class="hidden h-8 px-3 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl text-xs outline-none focus:border-[#7F76FF] w-48 transition-colors" />
+            <button id="btn-nova-solicitacao" onclick="abrirModalProjeto(null)" class="hidden ml-auto px-4 py-1.5 bg-[#002726] hover:bg-[#003835] text-[#93F574] rounded-xl text-xs font-bold items-center gap-1.5 cursor-pointer">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Nova Solicitação
+            </button>
+          </div>
+
+          <!-- Sub-view: Landing (2 cards) -->
+          <div id="solicitations-landing" class="flex-1 flex items-center justify-center p-8 overflow-y-auto">
+            <div class="max-w-2xl w-full space-y-8">
+              <div class="text-center">
+                <h2 class="text-xl font-bold text-[#002726] mb-1">Solicitações Internas</h2>
+                <p class="text-sm text-[#666]">Registre ou acompanhe suas demandas para o time de Operações</p>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div onclick="abrirModalProjeto(null)" class="bg-white rounded-2xl border border-[#eee] p-8 hover:shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:border-[#7F76FF]/40 transition-all cursor-pointer group flex flex-col gap-4 items-center text-center">
+                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#93F574] to-[#7F76FF] flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
+                    <svg class="w-7 h-7 text-[#002726]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-base text-[#002726] mb-1">Nova Solicitação</h3>
+                    <p class="text-xs text-[#666] leading-relaxed">Registre uma nova demanda ou solicitação de melhoria para o time de Operações</p>
+                  </div>
+                </div>
+                <div onclick="switchProjetosSubView('lista')" class="bg-white rounded-2xl border border-[#eee] p-8 hover:shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:border-[#93F574]/40 transition-all cursor-pointer group flex flex-col gap-4 items-center text-center">
+                  <div class="w-14 h-14 rounded-2xl bg-[#f0fdf4] border border-[#93F574]/30 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <svg class="w-7 h-7 text-[#002726]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-base text-[#002726] mb-1">Acompanhar minhas Solicitações</h3>
+                    <p class="text-xs text-[#666] leading-relaxed">Veja o histórico e status de todas as solicitações que você enviou</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sub-view: Lista de solicitações do usuário -->
+          <div id="solicitations-lista" class="hidden flex-1 overflow-y-auto p-6">
+            <div class="max-w-5xl mx-auto bg-white rounded-2xl border border-[#eee] shadow-[0_2px_12px_rgba(0,0,0,0.03)] overflow-hidden">
+              <div id="solicitations-list-container"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- View 8: CENTRAL DE AJUDA -->
+      <div id="view-section-ajuda" class="view-section hidden flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div class="flex-1 overflow-y-auto p-6 bg-[#F4F4F4]">
+          <div class="max-w-4xl mx-auto space-y-6">
+
+            <!-- Header -->
+            <div class="bg-[#002726] rounded-2xl p-6 text-white flex items-center gap-4 shadow-lg">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#93F574] to-[#7F76FF] flex items-center justify-center shrink-0">
+                <svg class="w-6 h-6 text-[#002726]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <div>
+                <h1 class="text-lg font-bold">Central de Ajuda</h1>
+                <p class="text-sm text-white/60 mt-0.5">Manual prático de uso do Bling LINK Operacional</p>
+              </div>
+            </div>
+
+            <!-- 1. Kanban -->
+            <div class="bg-white rounded-2xl border border-[#eee] overflow-hidden shadow-sm">
+              <div class="px-6 py-4 border-b border-[#eee] bg-[#fafafa] flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-[#7F76FF]/15 text-[#7F76FF] font-bold text-xs flex items-center justify-center">1</span>
+                <h2 class="font-bold text-sm text-[#002726]">Navegando pelo Kanban</h2>
+              </div>
+              <div class="p-6 space-y-4 text-sm text-[#444]">
+                <p>O <strong class="text-[#002726]">Kanban</strong> é a tela principal do sistema. Ele organiza todos os clientes em colunas que representam a fase atual da implantação. Cada cartão representa um cliente.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                  <div class="space-y-2">
+                    <p><strong>Como mover um cartão de fase:</strong></p>
+                    <ol class="list-decimal list-inside space-y-1 text-[#555] pl-2">
+                      <li>Clique no cartão do cliente para abrir o modal de detalhes.</li>
+                      <li>Vá até a aba <strong>Implantação</strong>.</li>
+                      <li>Altere o campo <strong>Status</strong> para a nova fase desejada.</li>
+                      <li>Clique em <strong>Salvar</strong>. O cartão se moverá automaticamente para a coluna correta.</li>
+                    </ol>
+                    <p class="mt-2"><strong>Dica:</strong> Você também pode usar o botão de status diretamente no topo do cartão no Kanban para uma mudança rápida de fase.</p>
+                  </div>
+                  <div class="rounded-xl overflow-hidden border border-[#eee] bg-[#f8fafc] flex items-center justify-center min-h-[140px] text-[#bbb] text-xs font-medium flex-col gap-2">
+                    <svg class="w-8 h-8 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <span>img/help-kanban-mover.png</span>
+                  </div>
+                </div>
+
+                <div class="pt-2 border-t border-[#f0f0f0]">
+                  <p class="font-bold text-[#002726] mb-2">O que significa cada coluna:</p>
+                  <div class="space-y-1.5 text-xs">
+                    <div class="flex items-start gap-2 p-2 rounded-lg bg-slate-50"><span class="px-2 py-0.5 rounded-full font-bold bg-slate-100 text-slate-700 shrink-0 text-[10px]">Agendada</span><span>Sessão de implantação marcada — cliente tem data e horário confirmados.</span></div>
+                    <div class="flex items-start gap-2 p-2 rounded-lg bg-blue-50"><span class="px-2 py-0.5 rounded-full font-bold bg-blue-100 text-blue-700 shrink-0 text-[10px]">Aguardando Agenda</span><span>Link de agendamento enviado, mas o cliente ainda não escolheu o horário.</span></div>
+                    <div class="flex items-start gap-2 p-2 rounded-lg bg-violet-50"><span class="px-2 py-0.5 rounded-full font-bold bg-violet-100 text-violet-700 shrink-0 text-[10px]">Em Andamento</span><span>Sessão em curso ou encerrada, aguardando envio da gravação e anotações.</span></div>
+                    <div class="flex items-start gap-2 p-2 rounded-lg bg-amber-50"><span class="px-2 py-0.5 rounded-full font-bold bg-amber-100 text-amber-700 shrink-0 text-[10px]">Enviar Gravação</span><span>A sessão ocorreu; falta enviar o link da gravação para o cliente.</span></div>
+                    <div class="flex items-start gap-2 p-2 rounded-lg bg-orange-50"><span class="px-2 py-0.5 rounded-full font-bold bg-orange-100 text-orange-700 shrink-0 text-[10px]">Reagendado</span><span>Cliente solicitou nova data. Um reagendamento foi registrado.</span></div>
+                    <div class="flex items-start gap-2 p-2 rounded-lg bg-emerald-50"><span class="px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-700 shrink-0 text-[10px]">Concluído</span><span>Implantação finalizada com sucesso. Processo encerrado.</span></div>
+                    <div class="flex items-start gap-2 p-2 rounded-lg bg-rose-50"><span class="px-2 py-0.5 rounded-full font-bold bg-rose-100 text-rose-700 shrink-0 text-[10px]">Estorno / Cancelado</span><span>Processo cancelado. Pode haver solicitação de reembolso em andamento.</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Criar registro -->
+            <div class="bg-white rounded-2xl border border-[#eee] overflow-hidden shadow-sm">
+              <div class="px-6 py-4 border-b border-[#eee] bg-[#fafafa] flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-[#93F574]/20 text-[#002726] font-bold text-xs flex items-center justify-center">2</span>
+                <h2 class="font-bold text-sm text-[#002726]">Criando um Novo Registro</h2>
+              </div>
+              <div class="p-6 space-y-4 text-sm text-[#444]">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                  <div class="space-y-2">
+                    <p>Para adicionar um novo cliente à base:</p>
+                    <ol class="list-decimal list-inside space-y-1 text-[#555] pl-2">
+                      <li>Clique no botão <strong class="text-[#002726]">+ Novo Registro</strong>, localizado na barra superior do Kanban (canto superior direito).</li>
+                      <li>Preencha os campos obrigatórios: <strong>Nome da empresa</strong> e <strong>Implantador</strong>.</li>
+                      <li>Preencha os demais campos conforme as informações disponíveis.</li>
+                      <li>Clique em <strong>Salvar</strong>. O novo cartão aparecerá na coluna correspondente ao status selecionado.</li>
+                    </ol>
+                  </div>
+                  <div class="rounded-xl overflow-hidden border border-[#eee] bg-[#f8fafc] flex items-center justify-center min-h-[140px] text-[#bbb] text-xs font-medium flex-col gap-2">
+                    <svg class="w-8 h-8 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <span>img/help-novo-registro.png</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Editar registro -->
+            <div class="bg-white rounded-2xl border border-[#eee] overflow-hidden shadow-sm">
+              <div class="px-6 py-4 border-b border-[#eee] bg-[#fafafa] flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-[#93F574]/20 text-[#002726] font-bold text-xs flex items-center justify-center">3</span>
+                <h2 class="font-bold text-sm text-[#002726]">Editando Dados de um Cliente</h2>
+              </div>
+              <div class="p-6 space-y-3 text-sm text-[#444]">
+                <p>Clique sobre qualquer cartão do Kanban ou linha da Planilha para abrir o painel de detalhes. O painel é dividido em abas:</p>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+                  <div class="p-3 rounded-xl bg-[#fafafa] border border-[#eee]"><strong class="text-[#002726] block mb-1">Contato</strong>Empresa, CNPJ, WhatsApp, e-mails, cidade, plano e valor.</div>
+                  <div class="p-3 rounded-xl bg-[#fafafa] border border-[#eee]"><strong class="text-[#002726] block mb-1">Implantação</strong>Status (fase no Kanban), implantador responsável, datas de agenda e links de acesso.</div>
+                  <div class="p-3 rounded-xl bg-[#fafafa] border border-[#eee]"><strong class="text-[#002726] block mb-1">Infos Pré/Pós</strong>Informações colhidas antes da sessão e registros pós-atendimento.</div>
+                  <div class="p-3 rounded-xl bg-[#fafafa] border border-[#eee]"><strong class="text-[#002726] block mb-1">Reagenda/Estorno</strong>Registrar solicitações de remarcação ou reembolso, com contadores automáticos.</div>
+                  <div class="p-3 rounded-xl bg-[#fafafa] border border-[#eee]"><strong class="text-[#002726] block mb-1">Conexões</strong>Relacionamentos do cliente com outros times (Loja Virtual, etc.).</div>
+                  <div class="p-3 rounded-xl bg-[#fafafa] border border-[#eee]"><strong class="text-[#002726] block mb-1">Outro Time</strong>Visualiza dados do mesmo CNPJ registrados pela outra equipe (IG ↔ BLV).</div>
+                </div>
+                <p class="text-xs text-[#888] bg-[#f8fafc] p-3 rounded-xl border border-[#eee]">💡 <strong>Dica:</strong> O painel direito exibe a <strong>linha do tempo de notas</strong> — registre interações, observações ou pendências com contexto de data e autor. As notas ficam visíveis para toda a equipe.</p>
+              </div>
+            </div>
+
+            <!-- 4. Módulos -->
+            <div class="bg-white rounded-2xl border border-[#eee] overflow-hidden shadow-sm">
+              <div class="px-6 py-4 border-b border-[#eee] bg-[#fafafa] flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-[#93F574]/20 text-[#002726] font-bold text-xs flex items-center justify-center">4</span>
+                <h2 class="font-bold text-sm text-[#002726]">Módulos do Menu Lateral</h2>
+              </div>
+              <div class="p-6 text-sm text-[#444]">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  <div class="flex items-start gap-3 p-3 rounded-xl bg-[#fafafa] border border-[#eee]">
+                    <svg class="w-5 h-5 text-[#7F76FF] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z"/></svg>
+                    <div><strong class="text-[#002726]">Kanban</strong><p class="mt-0.5 text-[#666]">Visão principal por colunas de status. Arraste ou edite cards para mover entre fases.</p></div>
+                  </div>
+                  <div class="flex items-start gap-3 p-3 rounded-xl bg-[#fafafa] border border-[#eee]">
+                    <svg class="w-5 h-5 text-[#7F76FF] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <div><strong class="text-[#002726]">Planilha</strong><p class="mt-0.5 text-[#666]">Todos os clientes em formato tabela. Ideal para busca rápida e visão geral.</p></div>
+                  </div>
+                  <div class="flex items-start gap-3 p-3 rounded-xl bg-[#fafafa] border border-[#eee]">
+                    <svg class="w-5 h-5 text-[#7F76FF] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <div><strong class="text-[#002726]">Agenda</strong><p class="mt-0.5 text-[#666]">Mostra as sessões agendadas para hoje, próximos dias e pendentes de data.</p></div>
+                  </div>
+                  <div class="flex items-start gap-3 p-3 rounded-xl bg-[#fafafa] border border-[#eee]">
+                    <svg class="w-5 h-5 text-[#7F76FF] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10"/></svg>
+                    <div><strong class="text-[#002726]">Métricas & Indicadores</strong><p class="mt-0.5 text-[#666]">KPIs de taxa de conclusão, reagendamentos, volume financeiro e desempenho por implantador.</p></div>
+                  </div>
+                  <div class="flex items-start gap-3 p-3 rounded-xl bg-[#fafafa] border border-[#eee]">
+                    <svg class="w-5 h-5 text-[#7F76FF] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+                    <div><strong class="text-[#002726]">Solicitações Internas</strong><p class="mt-0.5 text-[#666]">Registre e acompanhe demandas enviadas para o time de Operações (ex: melhorias, integrações).</p></div>
+                  </div>
+                  <div class="flex items-start gap-3 p-3 rounded-xl bg-[#fafafa] border border-[#eee]">
+                    <svg class="w-5 h-5 text-[#7F76FF] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg>
+                    <div><strong class="text-[#002726]">Atividades (BLV)</strong><p class="mt-0.5 text-[#666]">Exclusivo do time Bling Loja Virtual. Registra ações e follow-ups dos clientes BLV.</p></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. Links rápidos -->
+            <div class="bg-white rounded-2xl border border-[#eee] overflow-hidden shadow-sm">
+              <div class="px-6 py-4 border-b border-[#eee] bg-[#fafafa] flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-[#93F574]/20 text-[#002726] font-bold text-xs flex items-center justify-center">5</span>
+                <h2 class="font-bold text-sm text-[#002726]">Links Rápidos e Atalhos</h2>
+              </div>
+              <div class="p-6 text-sm text-[#444]">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div class="rounded-xl overflow-hidden border border-[#eee] bg-[#f8fafc] flex items-center justify-center min-h-[120px] text-[#bbb] text-xs font-medium flex-col gap-2">
+                    <svg class="w-8 h-8 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <span>img/help-topbar.png</span>
+                  </div>
+                  <div class="space-y-2 text-sm">
+                    <p><strong class="text-[#002726]">Barra superior (Topbar):</strong></p>
+                    <ul class="space-y-1.5 text-xs text-[#555]">
+                      <li class="flex items-start gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#7F76FF] mt-1.5 shrink-0"></span><span><strong>Campo de busca:</strong> Filtra em tempo real por empresa, contato ou qualquer campo visível.</span></li>
+                      <li class="flex items-start gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#7F76FF] mt-1.5 shrink-0"></span><span><strong>Filtro por implantador:</strong> Exibe apenas os cartões do profissional selecionado.</span></li>
+                      <li class="flex items-start gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#7F76FF] mt-1.5 shrink-0"></span><span><strong>Botão ☀️/🌙:</strong> Alterna entre o tema claro e escuro da área de trabalho.</span></li>
+                    </ul>
+                    <p class="mt-2"><strong class="text-[#002726]">Dentro de um Card (Kanban):</strong></p>
+                    <ul class="space-y-1.5 text-xs text-[#555]">
+                      <li class="flex items-start gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#93F574] mt-1.5 shrink-0"></span><span><strong>📱 WhatsApp:</strong> Abre o modal de disparo de mensagem pré-formatada para o cliente.</span></li>
+                      <li class="flex items-start gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#93F574] mt-1.5 shrink-0"></span><span><strong>📹 Meet:</strong> Abre o link da reunião Google Meet configurado para o cliente.</span></li>
+                      <li class="flex items-start gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#93F574] mt-1.5 shrink-0"></span><span><strong>💬 Octa:</strong> Abre a conversa desse cliente no Octadesk diretamente.</span></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- View 9: DOCUMENTAÇÃO TÉCNICA (Admin Only) -->
+      <div id="view-section-docs" class="view-section hidden flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div class="flex-1 overflow-y-auto p-6 bg-[#F4F4F4]">
+          <div class="max-w-4xl mx-auto space-y-6">
+
+            <!-- Header -->
+            <div class="bg-[#002726] rounded-2xl p-6 text-white flex items-center justify-between gap-4 shadow-lg">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#93F574] to-[#7F76FF] flex items-center justify-center shrink-0">
+                  <svg class="w-6 h-6 text-[#002726]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <div>
+                  <h1 class="text-lg font-bold">Documentação Técnica</h1>
+                  <p class="text-sm text-white/60 mt-0.5">Arquitetura, segurança e integrações do Bling LINK</p>
+                </div>
+              </div>
+              <span class="px-3 py-1 rounded-full bg-white/10 text-[#93F574] text-xs font-bold border border-[#93F574]/30">Admin Only</span>
+            </div>
+
+            <!-- 1. Visão Geral -->
+            <div class="bg-white rounded-2xl border border-[#eee] overflow-hidden shadow-sm">
+              <div class="px-6 py-4 border-b border-[#eee] bg-[#fafafa] flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-[#002726] text-[#93F574] font-bold text-xs flex items-center justify-center">1</span>
+                <h2 class="font-bold text-sm text-[#002726]">Visão Geral — O que o sistema faz</h2>
+              </div>
+              <div class="p-6 text-sm text-[#444] space-y-3">
+                <p>O <strong class="text-[#002726]">Bling LINK Operacional</strong> é uma aplicação web interna desenvolvida para o time de Implantação da Bling. Seu objetivo é centralizar o acompanhamento de clientes em processo de implantação do sistema Bling (ERP/e-commerce), substituindo planilhas manuais por um sistema colaborativo em tempo real.</p>
+                <p>O sistema gerencia dois times distintos com bases de dados separadas:</p>
+                <ul class="list-disc list-inside space-y-1 pl-2 text-[#555]">
+                  <li><strong>IG (Implantação Guiada):</strong> Clientes do plano com acompanhamento humano direto.</li>
+                  <li><strong>BLV (Bling Loja Virtual):</strong> Clientes com foco em implantação de loja virtual.</li>
+                </ul>
+                <div class="rounded-xl overflow-hidden border border-[#eee] bg-[#f8fafc] flex items-center justify-center min-h-[120px] text-[#bbb] text-xs font-medium flex-col gap-2 mt-2">
+                  <svg class="w-8 h-8 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  <span>img/docs-visao-geral.png — Diagrama geral da arquitetura</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Stack -->
+            <div class="bg-white rounded-2xl border border-[#eee] overflow-hidden shadow-sm">
+              <div class="px-6 py-4 border-b border-[#eee] bg-[#fafafa] flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-[#002726] text-[#93F574] font-bold text-xs flex items-center justify-center">2</span>
+                <h2 class="font-bold text-sm text-[#002726]">Stack de Tecnologias</h2>
+              </div>
+              <div class="p-6 text-sm text-[#444] space-y-3">
+                <p>O sistema usa tecnologias modernas, gratuitas ou de baixo custo, e não depende de grandes infraestruturas. Aqui está o que roda por trás:</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                  <div class="p-4 rounded-xl bg-[#fafafa] border border-[#eee] space-y-2">
+                    <div class="font-bold text-[#002726] flex items-center gap-1.5">
+                      <svg class="w-4 h-4 text-[#93F574]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+                      Frontend
+                    </div>
+                    <p class="text-[#666]">HTML + CSS (Tailwind via CDN) + JavaScript puro. Sem frameworks como React ou Vue — roda direto no navegador.</p>
+                  </div>
+                  <div class="p-4 rounded-xl bg-[#fafafa] border border-[#eee] space-y-2">
+                    <div class="font-bold text-[#002726] flex items-center gap-1.5">
+                      <svg class="w-4 h-4 text-[#7F76FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/></svg>
+                      Backend
+                    </div>
+                    <p class="text-[#666]">Node.js com Express. Serve os arquivos estáticos e expõe uma API REST que o frontend consome. Roda localmente na porta 3000.</p>
+                  </div>
+                  <div class="p-4 rounded-xl bg-[#fafafa] border border-[#eee] space-y-2">
+                    <div class="font-bold text-[#002726] flex items-center gap-1.5">
+                      <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
+                      Banco de Dados
+                    </div>
+                    <p class="text-[#666]">Supabase (PostgreSQL na nuvem). Armazena todos os registros de clientes, atividades e projetos. Também gerencia a autenticação de usuários.</p>
+                  </div>
+                </div>
+                <div class="mt-3 p-4 bg-[#f0fdf4] rounded-xl border border-[#93F574]/30 text-xs text-[#444]">
+                  <strong class="text-[#002726]">Bibliotecas adicionais instaladas no servidor:</strong>
+                  <ul class="mt-1 space-y-1 list-disc list-inside pl-2 text-[#555]">
+                    <li><code class="font-mono bg-white px-1 rounded">helmet</code> — Adiciona cabeçalhos de segurança HTTP em todas as respostas.</li>
+                    <li><code class="font-mono bg-white px-1 rounded">cors</code> — Controla quais origens podem chamar a API.</li>
+                    <li><code class="font-mono bg-white px-1 rounded">express-rate-limit</code> — Limita a quantidade de requisições por IP para evitar abuso.</li>
+                    <li><code class="font-mono bg-white px-1 rounded">@supabase/supabase-js</code> — SDK oficial do Supabase para Node.js e para o navegador.</li>
+                    <li><code class="font-mono bg-white px-1 rounded">PapaParse</code> — Lê e interpreta arquivos CSV para importação de planilhas.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Frontend / Backend -->
+            <div class="bg-white rounded-2xl border border-[#eee] overflow-hidden shadow-sm">
+              <div class="px-6 py-4 border-b border-[#eee] bg-[#fafafa] flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-[#002726] text-[#93F574] font-bold text-xs flex items-center justify-center">3</span>
+                <h2 class="font-bold text-sm text-[#002726]">Como o Frontend e o Backend se comunicam</h2>
+              </div>
+              <div class="p-6 text-sm text-[#444] space-y-4">
+                <p>Toda a comunicação entre a tela do usuário e o servidor segue o padrão <strong>REST</strong> — o frontend faz chamadas HTTP para rotas específicas do servidor, e o servidor responde em JSON.</p>
+                <div class="rounded-xl overflow-hidden border border-[#eee] bg-[#f8fafc] flex items-center justify-center min-h-[100px] text-[#bbb] text-xs font-medium flex-col gap-2">
+                  <svg class="w-8 h-8 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  <span>img/docs-diagrama-fluxo.png — Diagrama de fluxo de dados</span>
+                </div>
+                <p>O fluxo padrão de uma ação (ex: salvar um cliente) é:</p>
+                <ol class="list-decimal list-inside space-y-1.5 text-[#555] pl-2 text-xs">
+                  <li>Usuário clica em <strong>Salvar</strong> no modal do cliente.</li>
+                  <li>O JavaScript chama a função <code class="font-mono bg-[#f0f0f0] px-1 rounded">apiFetch('/api/clientes/123', &#123; method: 'PUT', body: ... &#125;)</code>.</li>
+                  <li>A função <code class="font-mono bg-[#f0f0f0] px-1 rounded">apiFetch</code> injeta automaticamente o token JWT do usuário no cabeçalho <code class="font-mono bg-[#f0f0f0] px-1 rounded">Authorization</code>.</li>
+                  <li>O servidor Express recebe a requisição, valida o JWT com o Supabase, e verifica se o e-mail do usuário está na lista de acessos permitidos (RBAC).</li>
+                  <li>Se tudo estiver correto, o servidor executa a operação no banco (Supabase/PostgreSQL) usando o token do usuário — o que garante que as regras de RLS (Row Level Security) sejam aplicadas.</li>
+                  <li>O banco retorna os dados atualizados. O servidor responde com o JSON. O frontend atualiza a tela sem recarregar a página.</li>
+                </ol>
+                <div class="p-4 bg-[#f0f4ff] rounded-xl border border-[#7F76FF]/20 text-xs">
+                  <strong class="text-[#002726]">Principais rotas da API (server.js):</strong>
+                  <table class="mt-2 w-full text-xs border-collapse">
+                    <thead><tr class="text-left text-[#666] border-b border-[#dde]"><th class="py-1 pr-4">Método + Rota</th><th class="py-1">Descrição</th></tr></thead>
+                    <tbody class="divide-y divide-[#eee] text-[#555]">
+                      <tr><td class="py-1.5 pr-4 font-mono text-[#002726]">GET /api/auth/me</td><td>Valida o JWT e retorna os dados do usuário logado (nome, role, times).</td></tr>
+                      <tr><td class="py-1.5 pr-4 font-mono text-[#002726]">GET /api/clientes</td><td>Lista todos os clientes da IG.</td></tr>
+                      <tr><td class="py-1.5 pr-4 font-mono text-[#002726]">POST /api/clientes</td><td>Cria um novo cliente IG.</td></tr>
+                      <tr><td class="py-1.5 pr-4 font-mono text-[#002726]">PUT /api/clientes/:id</td><td>Atualiza os dados de um cliente IG existente.</td></tr>
+                      <tr><td class="py-1.5 pr-4 font-mono text-[#002726]">DELETE /api/clientes/:id</td><td>Remove um cliente IG.</td></tr>
+                      <tr><td class="py-1.5 pr-4 font-mono text-[#002726]">GET /api/clientes-blv</td><td>Lista todos os clientes da BLV.</td></tr>
+                      <tr><td class="py-1.5 pr-4 font-mono text-[#002726]">GET /api/timeline-cnpj/:cnpj</td><td>Retorna as notas combinadas de IG + BLV para um CNPJ.</td></tr>
+                      <tr><td class="py-1.5 pr-4 font-mono text-[#002726]">GET /api/cross-lookup/:cnpj</td><td>Busca dados do mesmo CNPJ nos dois times simultaneamente.</td></tr>
+                      <tr><td class="py-1.5 pr-4 font-mono text-[#002726]">GET /api/projetos</td><td>Lista as solicitações internas.</td></tr>
+                      <tr><td class="py-1.5 pr-4 font-mono text-[#002726]">GET /api/atividades-blv</td><td>Lista as atividades registradas pelo time BLV.</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Segurança -->
+            <div class="bg-white rounded-2xl border border-[#eee] overflow-hidden shadow-sm">
+              <div class="px-6 py-4 border-b border-[#eee] bg-[#fafafa] flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-[#002726] text-[#93F574] font-bold text-xs flex items-center justify-center">4</span>
+                <h2 class="font-bold text-sm text-[#002726]">Segurança — Login, Proteção de Rotas e Banco de Dados</h2>
+              </div>
+              <div class="p-6 text-sm text-[#444] space-y-5">
+
+                <div class="space-y-2">
+                  <h3 class="font-bold text-[#002726] flex items-center gap-2">
+                    <svg class="w-4 h-4 text-[#7F76FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    Autenticação via Magic Link (Supabase Auth)
+                  </h3>
+                  <p>Em vez de senha, o sistema usa um <strong>Magic Link</strong> enviado por e-mail. O fluxo é:</p>
+                  <ol class="list-decimal list-inside space-y-1 text-[#555] pl-2 text-xs">
+                    <li>Usuário informa o e-mail na tela de login e clica em <strong>Enviar Link de Acesso</strong>.</li>
+                    <li>O Supabase envia um e-mail com um link único e temporário (expira em 1 hora, uso único).</li>
+                    <li>Ao clicar no link, o Supabase valida o token e redireciona o usuário para <code class="font-mono bg-[#f0f0f0] px-1 rounded">http://localhost:3000</code> com um <strong>JWT</strong> (JSON Web Token) na URL.</li>
+                    <li>O JavaScript do app detecta automaticamente o token da URL, estabelece a sessão e a armazena no <code class="font-mono bg-[#f0f0f0] px-1 rounded">sessionStorage</code> do navegador (apagado ao fechar a aba).</li>
+                    <li>O app verifica com o backend (<code class="font-mono bg-[#f0f0f0] px-1 rounded">GET /api/auth/me</code>) se o e-mail está na lista de usuários autorizados.</li>
+                  </ol>
+                </div>
+
+                <div class="space-y-2">
+                  <h3 class="font-bold text-[#002726] flex items-center gap-2">
+                    <svg class="w-4 h-4 text-[#7F76FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    RBAC — Controle de Acesso por Perfil
+                  </h3>
+                  <p class="text-xs text-[#555]">O sistema possui dois perfis de usuário, definidos diretamente no <code class="font-mono bg-[#f0f0f0] px-1 rounded">server.js</code>. Qualquer e-mail não listado recebe um erro 403 (acesso negado) mesmo que consiga se autenticar no Supabase:</p>
+                  <div class="overflow-x-auto mt-2">
+                    <table class="w-full text-xs border-collapse">
+                      <thead><tr class="text-left text-[#666] border-b border-[#eee] bg-[#fafafa]"><th class="px-3 py-2">Perfil</th><th class="px-3 py-2">E-mails autorizados</th><th class="px-3 py-2">Times</th><th class="px-3 py-2">Acesso extra</th></tr></thead>
+                      <tbody class="divide-y divide-[#eee] text-[#555]">
+                        <tr><td class="px-3 py-2 font-bold text-[#002726]">admin</td><td class="px-3 py-2 font-mono text-xs">mateus.marin@bling.com.br</td><td class="px-3 py-2">IG + BLV</td><td class="px-3 py-2">Ajustes, Documentação, todas as rotas</td></tr>
+                        <tr><td class="px-3 py-2 font-bold text-[#555]">agent</td><td class="px-3 py-2 font-mono text-xs">manuela.curti@bling.com.br<br/>luan.cavalheiro@bling.com.br</td><td class="px-3 py-2">IG ou BLV</td><td class="px-3 py-2">Módulos operacionais do seu time</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="space-y-2">
+                  <h3 class="font-bold text-[#002726] flex items-center gap-2">
+                    <svg class="w-4 h-4 text-[#7F76FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
+                    RLS — Segurança no Nível do Banco de Dados
+                  </h3>
+                  <p class="text-xs text-[#555]">O Supabase tem um mecanismo chamado <strong>Row Level Security (RLS)</strong>. Funciona assim: mesmo que alguém descubra a URL do banco de dados, ele não consegue ler ou escrever dados sem um JWT válido de um usuário autenticado.</p>
+                  <p class="text-xs text-[#555]">Quando o servidor faz uma operação no banco, ele usa o JWT do usuário (não uma chave de serviço global). Isso significa que o banco verifica individualmente se aquele usuário específico pode executar aquela operação — uma camada extra de proteção, independente do código do servidor.</p>
+                  <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900">
+                    ⚠️ <strong>Tabelas protegidas por RLS:</strong> <code class="font-mono">clientes</code>, <code class="font-mono">clientes_blv</code>, <code class="font-mono">atividades_loja_virtual</code>, <code class="font-mono">gestao_projetos</code>. Todas exigem autenticação para leitura e escrita.
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- 5. Integrações -->
+            <div class="bg-white rounded-2xl border border-[#eee] overflow-hidden shadow-sm">
+              <div class="px-6 py-4 border-b border-[#eee] bg-[#fafafa] flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-[#002726] text-[#93F574] font-bold text-xs flex items-center justify-center">5</span>
+                <h2 class="font-bold text-sm text-[#002726]">Integrações e API — Como sistemas externos enviam dados</h2>
+              </div>
+              <div class="p-6 text-sm text-[#444] space-y-5">
+                <p>Sistemas externos como o <strong>Octadesk</strong>, <strong>Jestor</strong> ou qualquer automação (n8n, Zapier, Make) podem criar e atualizar registros no Bling LINK via chamadas HTTP à nossa API. Para isso é necessário um <strong>token de serviço</strong> (JWT de um usuário admin).</p>
+
+                <div class="rounded-xl overflow-hidden border border-[#eee] bg-[#f8fafc] flex items-center justify-center min-h-[100px] text-[#bbb] text-xs font-medium flex-col gap-2">
+                  <svg class="w-8 h-8 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  <span>img/docs-integracao-fluxo.png — Diagrama de integração externa</span>
+                </div>
+
+                <div class="space-y-3">
+                  <h3 class="font-bold text-[#002726] text-sm">Exemplo: Criar um cliente IG via API externa</h3>
+                  <div class="rounded-xl overflow-hidden border border-[#ddd]">
+                    <div class="bg-[#1e2030] px-4 py-2 text-[11px] font-mono text-[#7F76FF] flex items-center gap-2">
+                      <span class="text-[#93F574] font-bold">POST</span>
+                      <span class="text-white/70">http://localhost:3000/api/clientes</span>
+                    </div>
+                    <pre class="bg-[#282c3e] text-[#cdd6f4] text-xs p-4 overflow-x-auto font-mono leading-relaxed"><code>{
+  "empresa": "Empresa Exemplo LTDA",
+  "cnpj": "12.345.678/0001-90",
+  "nomeContato": "João Silva",
+  "whatsapp": "51999990000",
+  "emailDaEmpresa": "contato@empresa.com.br",
+  "emailDaAgenda": "joao@empresa.com.br",
+  "cidade": "Porto Alegre",
+  "estado": "RS",
+  "plano": "Premium",
+  "valorIG": 299.00,
+  "status": "Agendada",
+  "implantador": "Manu",
+  "agenda": "2026-09-15 14:00 - 15:30"
+}</code></pre>
+                    <div class="bg-[#1e2030] px-4 py-2 text-[11px] font-mono text-white/50">
+                      Header obrigatório: <span class="text-[#93F574]">Authorization: Bearer &lt;JWT_TOKEN&gt;</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="space-y-3">
+                  <h3 class="font-bold text-[#002726] text-sm">Exemplo: Registrar uma atividade BLV</h3>
+                  <div class="rounded-xl overflow-hidden border border-[#ddd]">
+                    <div class="bg-[#1e2030] px-4 py-2 text-[11px] font-mono text-[#7F76FF] flex items-center gap-2">
+                      <span class="text-[#93F574] font-bold">POST</span>
+                      <span class="text-white/70">http://localhost:3000/api/atividades-blv</span>
+                    </div>
+                    <pre class="bg-[#282c3e] text-[#cdd6f4] text-xs p-4 overflow-x-auto font-mono leading-relaxed"><code>{
+  "empresa": "Empresa Exemplo LTDA",
+  "titulo": "Follow-up pós-implantação",
+  "followup": "Cliente reportou dúvida sobre emissão de NF-e. Orientamos e enviamos tutorial.",
+  "criadoPor": "Luan Cavalheiro"
+}</code></pre>
+                  </div>
+                </div>
+
+                <div class="space-y-3">
+                  <h3 class="font-bold text-[#002726] text-sm">Exemplo: Atualizar o status de um cliente IG</h3>
+                  <div class="rounded-xl overflow-hidden border border-[#ddd]">
+                    <div class="bg-[#1e2030] px-4 py-2 text-[11px] font-mono text-[#7F76FF] flex items-center gap-2">
+                      <span class="text-amber-400 font-bold">PUT</span>
+                      <span class="text-white/70">http://localhost:3000/api/clientes/1234</span>
+                    </div>
+                    <pre class="bg-[#282c3e] text-[#cdd6f4] text-xs p-4 overflow-x-auto font-mono leading-relaxed"><code>{
+  "status": "Concluído",
+  "igRealizada": "Sim",
+  "informacoesPos": "Implantação concluída. Cliente apto para uso autônomo."
+}</code></pre>
+                  </div>
+                </div>
+
+                <div class="p-4 bg-[#f0fdf4] rounded-xl border border-[#93F574]/30 text-xs space-y-1">
+                  <strong class="text-[#002726]">Respostas da API:</strong>
+                  <ul class="mt-1 space-y-1 text-[#555]">
+                    <li><code class="font-mono bg-white px-1 rounded">200 / 201</code> — Operação bem-sucedida. Retorna o objeto JSON atualizado.</li>
+                    <li><code class="font-mono bg-white px-1 rounded">400</code> — Dados inválidos no corpo da requisição.</li>
+                    <li><code class="font-mono bg-white px-1 rounded">401</code> — Token JWT ausente, inválido ou expirado.</li>
+                    <li><code class="font-mono bg-white px-1 rounded">403</code> — E-mail do token não está na lista de acessos permitidos.</li>
+                    <li><code class="font-mono bg-white px-1 rounded">404</code> — Registro não encontrado.</li>
+                    <li><code class="font-mono bg-white px-1 rounded">429</code> — Limite de requisições atingido (rate limit: 500 req/min para API geral).</li>
+                    <li><code class="font-mono bg-white px-1 rounded">500</code> — Erro interno do servidor.</li>
+                  </ul>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- View 10: BASE DE CONHECIMENTO (Admin Only) -->
+      <div id="view-section-base-conhecimento" class="view-section hidden flex-1 flex flex-col min-w-0 overflow-hidden"></div>
+
+    </main>
+
+    <!-- RODAPÉ DE STATUS -->
+    <footer class="h-8 bg-white border-t border-[#eee] flex items-center px-6 justify-between shrink-0 select-none text-[11px] text-[#666]">
+      <div class="flex items-center gap-5">
+        <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#7F76FF]"></span><span>Pendentes: <strong id="ft-stat-pendentes" class="text-[#002726]">0</strong></span></div>
+        <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#93F574]"></span><span>Hoje: <strong id="ft-stat-hoje" class="text-[#002726]">0</strong></span></div>
+        <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#ff9800]"></span><span>Falta Pós: <strong id="ft-stat-pos" class="text-[#002726]">0</strong></span></div>
+        <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-600"></span><span>Concluídos: <strong id="ft-stat-concluidos" class="text-[#002726]">0</strong></span></div>
+      </div>
+      <div class="text-[11px] text-[#888] font-mono">Bling IG Operacional • Node.js</div>
+    </footer>
+
+  </div>
+</div>
+
+<!-- MODAL CLIENTE -->
+<div id="card-modal-overlay" class="hidden fixed inset-0 bg-[#002726]/40 backdrop-blur-sm z-50 items-center justify-center p-3 sm:p-5 overflow-y-auto">
+  <div onclick="event.stopPropagation()" class="bg-white w-[95%] max-w-[1200px] h-[90vh] max-h-[90vh] rounded-[24px] shadow-[0_24px_48px_rgba(0,0,0,0.2)] flex flex-col md:flex-row relative overflow-hidden text-xs">
+    <button type="button" onclick="fecharModalCliente()" class="absolute top-4 right-4 bg-[#f0f0f0] hover:bg-[#e0e0e0] w-8 h-8 rounded-full flex items-center justify-center cursor-pointer text-[#666] z-20">✕</button>
+    <!-- Painel Esquerdo -->
+    <div class="flex-[2] flex flex-col overflow-y-auto border-r border-[#eee] min-w-0">
+      <div class="p-6 sm:p-8 bg-gradient-to-b from-[#fcfcfc] to-white border-b border-[#eee] flex flex-col sm:flex-row gap-5 items-start">
+        <div id="modal-company-initials" class="w-16 h-16 sm:w-20 sm:h-20 rounded-[20px] bg-gradient-to-br from-[#93F574] to-[#7F76FF] text-[#002726] text-2xl font-bold flex items-center justify-center shrink-0 shadow-md">IG</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap mb-1">
+            <h2 id="modal-company-title" class="text-xl sm:text-2xl font-bold text-[#002726] tracking-tight truncate">Nome da Empresa</h2>
+            <span id="badge-modal-top-especialista" class="hidden px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#93F574]/20 text-[#002726] border border-[#93F574]/40 items-center gap-1">✨ Top Especialista</span>
+          </div>
+          <div class="flex flex-wrap gap-2 mb-3">
+            <button type="button" onclick="copyModalField('id')" class="flex items-center gap-1 bg-[#f5f5f5] hover:bg-white hover:border-[#7F76FF] border border-transparent px-2.5 py-1 rounded-lg text-xs text-[#555] transition-all cursor-pointer"><span class="font-bold text-[#888]">ID:</span><span id="badge-txt-id" class="font-mono font-bold text-[#002726]">-</span></button>
+            <button type="button" onclick="copyModalField('cnpj')" class="flex items-center gap-1 bg-[#f5f5f5] hover:bg-white hover:border-[#7F76FF] border border-transparent px-2.5 py-1 rounded-lg text-xs text-[#555] transition-all cursor-pointer"><span class="font-bold text-[#888]">CNPJ:</span><span id="badge-txt-cnpj" class="font-mono">-</span></button>
+            <button type="button" onclick="copyModalField('idEmpresa')" class="flex items-center gap-1 bg-[#f5f5f5] hover:bg-white hover:border-[#7F76FF] border border-transparent px-2.5 py-1 rounded-lg text-xs text-[#555] transition-all cursor-pointer"><span class="font-bold text-[#888]">ID Bling:</span><span id="badge-txt-idEmpresa" class="font-mono font-semibold">-</span></button>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span id="lbl-modal-status-badge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-[#93F574]/20 text-[#002726] border border-[#93F574]/30">Status: -</span>
+            <span id="lbl-modal-ig-badge" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-[#7F76FF]/15 text-[#4a41cc] border border-[#7F76FF]/20">-</span>
+            <a id="btn-modal-wa-action" href="#" target="_blank" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1 transition-colors">📱 WhatsApp</a>
+            <a id="btn-modal-meet-action" href="#" target="_blank" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 flex items-center gap-1 transition-colors">📹 Meet</a>
+            <a id="btn-modal-octa-action" href="#" target="_blank" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 flex items-center gap-1 transition-colors">💬 Octa</a>
+          </div>
+        </div>
+      </div>
+      <!-- Abas -->
+      <div class="px-6 sm:px-8 py-3 bg-[#fafafa] border-b border-[#eee] flex justify-start sm:justify-center overflow-x-auto">
+        <div class="segmented-control flex gap-1 p-1 bg-[#eee] rounded-xl">
+          <button type="button" id="tab-btn-contato" onclick="switchModalTab('contato')" class="segment-btn px-3 py-1.5 rounded-lg font-bold text-[#555] transition-all cursor-pointer active">Contato</button>
+          <button type="button" id="tab-btn-implantacao" onclick="switchModalTab('implantacao')" class="segment-btn px-3 py-1.5 rounded-lg font-bold text-[#555] transition-all cursor-pointer">Implantação</button>
+          <button type="button" id="tab-btn-pre_pos" onclick="switchModalTab('pre_pos')" class="segment-btn px-3 py-1.5 rounded-lg font-bold text-[#555] transition-all cursor-pointer">Infos Pós</button>
+          <button type="button" id="tab-btn-reagenda_estorno" onclick="switchModalTab('reagenda_estorno')" class="segment-btn px-3 py-1.5 rounded-lg font-bold text-[#555] transition-all cursor-pointer">Reagenda/Estorno</button>
+          <button type="button" id="tab-btn-conexoes" onclick="switchModalTab('conexoes')" class="hidden segment-btn px-3 py-1.5 rounded-lg font-bold text-[#555] transition-all cursor-pointer">Conexões</button>
+          <button type="button" id="tab-btn-cross" onclick="switchModalTab('cross')" class="hidden segment-btn px-3 py-1.5 rounded-lg font-bold text-[#555] transition-all cursor-pointer"><span id="tab-cross-label">Outro Time</span></button>
+        </div>
+      </div>
+      <!-- Formulário -->
+      <form id="form-cliente-modal" onsubmit="salvarClienteFormModal(event)" class="flex-1 p-6 sm:p-8 space-y-6 overflow-y-auto">
+        <!-- ABA 1: CONTATO -->
+        <div id="modal-tab-content-contato" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div><label class="block font-bold text-[#666] mb-1">Nome da empresa *</label><input type="text" id="inp-modal-empresa" required class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+            <div><label class="block font-bold text-[#666] mb-1">Nome do contato</label><input type="text" id="inp-modal-nomeContato" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+            <div><label class="block font-bold text-[#666] mb-1">CPF/CNPJ</label><input type="text" id="inp-modal-cnpj" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+            <div class="ig-only"><label class="block font-bold text-[#666] mb-1">Whatsapp</label><input type="text" id="inp-modal-whatsapp" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+            <!-- BLV-only fields -->
+            <div class="blv-only hidden"><label class="block font-bold text-[#666] mb-1">Telefone</label><input type="text" id="inp-modal-telefone-blv" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+            <div class="blv-only hidden"><label class="block font-bold text-[#666] mb-1">Site</label><input type="text" id="inp-modal-site-blv" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+            <div class="blv-only hidden"><label class="block font-bold text-[#666] mb-1">Nome do Contato</label><input type="text" id="inp-modal-nomeDoContato-blv" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+            <div class="blv-only hidden"><label class="block font-bold text-[#666] mb-1">Cargo do Contato</label><input type="text" id="inp-modal-cargoDoContato-blv" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+            <div><label class="block font-bold text-[#666] mb-1">E-mail da Empresa</label><input type="email" id="inp-modal-emailDaEmpresa" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+            <div><label class="block font-bold text-[#666] mb-1">E-mail da Agenda</label><input type="email" id="inp-modal-emailDaAgenda" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+            <div><label class="block font-bold text-[#666] mb-1">Cidade</label><input type="text" id="inp-modal-cidade" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+            <div><label class="block font-bold text-[#666] mb-1">Estado (UF)</label><input type="text" id="inp-modal-estado" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+            <div><label class="block font-bold text-[#666] mb-1">Plano</label><input type="text" id="inp-modal-plano" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+            <div><label class="block font-bold text-[#666] mb-1">Situação da conta</label><input type="text" id="inp-modal-situacaoDaConta" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+            <div><label class="block font-bold text-[#666] mb-1">Regime Tributário</label><input type="text" id="inp-modal-regimeTributario" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+            <div><label class="block font-bold text-[#666] mb-1">Valor IG (R$)</label><input type="number" step="0.01" id="inp-modal-valorIG" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+            <div><label class="block font-bold text-[#666] mb-1">Cupom</label><input type="text" id="inp-modal-cupom" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+            <div><label class="block font-bold text-[#666] mb-1">Data Inscrição</label><input type="date" id="inp-modal-dataInscricao" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+          </div>
+          <!-- Datas do registro -->
+          <div class="flex flex-wrap gap-3 pt-1 border-t border-[#f0f0f0]">
+            <div class="flex items-center gap-1.5 text-[11px] text-[#888]">
+              <span class="font-semibold text-[#555]">Criado em:</span>
+              <span id="contato-txt-criadoEm" class="font-mono">—</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-[11px] text-[#888]">
+              <span class="font-semibold text-[#555]">Atualizado em:</span>
+              <span id="contato-txt-diasAtualizado" class="font-mono">—</span>
+            </div>
+          </div>
+        </div>
+        <!-- ABA 2: IMPLANTAÇÃO -->
+        <div id="modal-tab-content-implantacao" class="hidden space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Manual -->
+            <div><label class="block font-bold text-[#666] mb-1">Status</label><select id="inp-modal-status" class="w-full p-2.5 bg-white border-2 border-[#002726] rounded-xl font-bold text-[#002726] outline-none"></select></div>
+            <!-- Manual ([interno] Selecionar implantador) -->
+            <div><label class="block font-bold text-[#666] mb-1">Implantador *</label><select id="inp-modal-implantador" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]"></select></div>
+            <!-- Auto -->
+            <div><label class="block font-bold text-[#666] mb-1 flex items-center gap-1.5">IG Comprada <span class="ig-only text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full leading-none">Auto</span></label><select id="inp-modal-igComprada" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none"></select></div>
+            <!-- Manual -->
+            <div><label class="block font-bold text-[#666] mb-1">IG Agendada</label><select id="inp-modal-igAgendada" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none"></select></div>
+            <!-- Auto — Link para Agendar MOVIDO para acima de Agenda, ig-only -->
+            <div class="ig-only sm:col-span-2"><label class="block font-bold text-[#666] mb-1 flex items-center gap-1.5">Link para Agendar <span class="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full leading-none">Auto</span></label><div class="flex gap-2"><input type="url" id="inp-modal-linkParaAgendar" class="flex-1 p-2.5 bg-white border border-[#ddd] rounded-xl outline-none font-mono" /><button type="button" onclick="gerarAgendaModalHandler()" class="px-4 py-2 bg-[#93F574] hover:bg-[#82e265] text-[#002726] font-bold text-xs rounded-xl shadow-xs shrink-0 cursor-pointer">📅 Gerar Agenda</button></div></div>
+            <!-- Auto para IG / Manual para BLV (Dia da Implantação) -->
+            <div><label class="block font-bold text-[#666] mb-1 flex items-center gap-1.5">Agenda <span class="ig-only text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full leading-none">Auto</span></label><input type="text" id="inp-modal-agenda" placeholder="2026-08-24 14:00 - 15:30" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+            <!-- Auto -->
+            <div><label class="block font-bold text-[#666] mb-1 flex items-center gap-1.5">Enviado por <span class="ig-only text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full leading-none">Auto</span></label><input type="text" id="inp-modal-enviadoPor" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+            <!-- Manual — ig-only -->
+            <div class="ig-only sm:col-span-2"><label class="block font-bold text-[#666] mb-1">Conversa Octa</label><input type="url" id="inp-modal-conversaOcta" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none font-mono" /></div>
+            <!-- Auto — Link do Meet ADICIONADO abaixo de Conversa Octa, ig-only -->
+            <div class="ig-only sm:col-span-2"><label class="block font-bold text-[#666] mb-1 flex items-center gap-1.5">Link do Meet <span class="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full leading-none">Auto</span></label><div class="flex gap-2"><input type="url" id="inp-modal-linkMeet" class="flex-1 p-2.5 bg-white border border-[#ddd] rounded-xl outline-none font-mono" /><a href="#" target="_blank" onclick="var v=document.getElementById('inp-modal-linkMeet').value; if(!v){return false;}; this.href=v;" class="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-800 font-bold text-xs rounded-xl border border-blue-200 shrink-0 flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap">📹 Abrir</a></div></div>
+            <!-- BLV only -->
+            <div class="blv-only hidden sm:col-span-2"><label class="block font-bold text-[#666] mb-1">Conversa Octadesk</label><input type="url" id="inp-modal-conversaOctadesk-blv" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none font-mono" /></div>
+            <div class="blv-only hidden sm:col-span-2"><label class="block font-bold text-[#666] mb-1">Origem</label><input type="text" id="inp-modal-origem-blv" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+            <!-- Informações Pré (movido de Infos Pós) -->
+            <div class="sm:col-span-2 pt-2 border-t border-[#eee]"><label class="block font-bold text-[#666] mb-1">Informações Pré</label><textarea id="inp-modal-informacoesPre" rows="3" class="w-full p-3 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]"></textarea></div>
+          </div>
+        </div>
+        <!-- ABA 3: INFOS PÓS -->
+        <div id="modal-tab-content-pre_pos" class="hidden space-y-4">
+          <div><label class="block font-bold text-[#666] mb-1">IG Realizada</label><select id="inp-modal-igRealizada" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none"></select></div>
+          <div><label class="block font-bold text-[#666] mb-1">Informações Pós</label><textarea id="inp-modal-informacoesPos" rows="3" class="w-full p-3 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]"></textarea></div>
+          <div><label class="inline-flex items-center gap-2 cursor-pointer p-2 rounded-xl hover:bg-black/5 transition-colors"><input type="checkbox" id="inp-modal-topEspecialista" class="w-4 h-4 rounded text-[#002726]" /><span class="font-bold text-[#002726]">Top Especialista</span></label></div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-[#eee]">
+            <div><label class="block font-bold text-[#666] mb-1">Integração</label><input type="text" id="inp-modal-integracao" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none" /></div>
+            <div><label class="block font-bold text-[#666] mb-1">Logística</label><input type="text" id="inp-modal-logistica" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none" /></div>
+            <div><label class="block font-bold text-[#666] mb-1">Link Gravação</label><input type="url" id="inp-modal-linkGravacao1" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none font-mono" /></div>
+            <div><label class="block font-bold text-[#666] mb-1">Link Anotações</label><input type="url" id="inp-modal-linkAnotacoes1" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none font-mono" /></div>
+          </div>
+        </div>
+        <!-- ABA 4: REAGENDAMENTO/ESTORNO -->
+        <div id="modal-tab-content-reagenda_estorno" class="hidden space-y-4">
+          <div class="p-4 bg-orange-50/60 rounded-2xl border border-orange-200 space-y-4">
+            <h4 class="font-bold text-orange-950 uppercase tracking-wide">Controle de Reagendamento</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div><label class="block font-bold text-[#666] mb-1">Tipo Reagenda</label><select id="inp-modal-tipoReagenda" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none"></select></div>
+              <div><label class="block font-bold text-[#666] mb-1">Tempo Reagenda</label><input type="text" id="inp-modal-tempoReagenda" placeholder="Ex: 30 min" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none" /></div>
+              <div class="sm:col-span-2"><label class="block font-bold text-[#666] mb-1">Link Reagenda</label><input type="url" id="inp-modal-linkReagenda" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none font-mono" /><div class="mt-2"><button type="button" onclick="enviarReagendaModalHandler()" class="px-4 py-2 text-xs font-bold bg-orange-600 hover:bg-orange-700 text-white rounded-xl shadow-xs cursor-pointer">🔄 Enviar Reagenda (+1)</button></div></div>
+              <div><label class="block font-bold text-[#666] mb-1">Qtd. Reagendamento</label><input type="number" id="inp-modal-qtdReagendamento" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none" /></div>
+            </div>
+          </div>
+          <div class="p-4 bg-rose-50/50 rounded-xl border border-rose-200 space-y-3">
+            <h4 class="font-bold text-rose-950 uppercase">Solicitação de Estorno</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div><label class="block font-bold text-[#666] mb-1">Motivo do estorno</label><select id="inp-modal-motivoEstorno" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none"></select></div>
+              <div><label class="block font-bold text-[#666] mb-1">Ticket de estorno</label><input type="text" id="inp-modal-ticketEstorno" placeholder="TKT-12345" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none" /></div>
+              <div class="sm:col-span-2"><label class="block font-bold text-[#666] mb-1">Descrição do estorno</label><textarea id="inp-modal-descricaoDoEstorno" rows="2" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none"></textarea></div>
+            </div>
+          </div>
+        </div>
+        <!-- ABA 5: CONEXÕES -->
+        <div id="modal-tab-content-conexoes" class="hidden space-y-4">
+          <div class="p-4 bg-indigo-50/40 rounded-2xl border border-indigo-100 space-y-4">
+            <h4 class="font-bold text-[#002726] uppercase tracking-wide">Dados da Conexão</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div><label class="block font-bold text-[#666] mb-1">Origem</label><input type="text" id="inp-modal-origem" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+              <div><label class="block font-bold text-[#666] mb-1">Time</label><input type="text" id="inp-modal-time" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+              <div><label class="block font-bold text-[#666] mb-1">Responsável</label><input type="text" id="inp-modal-responsavel" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]" /></div>
+              <div class="sm:col-span-3"><label class="block font-bold text-[#666] mb-1">Link Conexões</label><input type="url" id="inp-modal-linkConexao" class="w-full p-2.5 bg-white border border-[#ddd] rounded-xl outline-none font-mono" /></div>
+              <div class="sm:col-span-3"><label class="block font-bold text-[#666] mb-1">Descrição</label><textarea id="inp-modal-descricaoConexao" rows="3" class="w-full p-3 bg-white border border-[#ddd] rounded-xl outline-none focus:border-[#7F76FF]"></textarea></div>
+            </div>
+          </div>
+        </div>
+        <!-- ABA 6: CROSS-TEAM -->
+        <div id="modal-tab-content-cross" class="hidden min-h-[200px]">
+          <div id="cross-team-data-container" class="py-10 text-center text-sm text-[#aaa]">
+            Carregando dados do outro time...
+          </div>
+        </div>
+        <!-- Metadados -->
+        <details class="bg-[#f9f9f9] rounded-xl border border-[#eee] overflow-hidden">
+          <summary class="p-3 font-bold text-[#002726] cursor-pointer flex items-center justify-between select-none">Metadados Técnicos & Auditoria</summary>
+          <div class="p-3 border-t border-[#eee] grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div><span class="text-[#888] font-mono text-[10px] block">Criação da Agenda:</span><span id="meta-txt-criacaoDaAgenda" class="font-semibold text-slate-800 font-mono">-</span></div>
+            <div><span class="text-[#888] font-mono text-[10px] block">Criado em:</span><span id="meta-txt-criadoEm" class="font-semibold text-slate-800 font-mono">-</span></div>
+            <div><span class="text-[#888] font-mono text-[10px] block">Dias Criado:</span><span id="meta-txt-diasCriado" class="font-semibold text-slate-800">-</span></div>
+            <div><span class="text-[#888] font-mono text-[10px] block">Dias Atualizado:</span><span id="meta-txt-diasAtualizado" class="font-semibold text-slate-800">-</span></div>
+          </div>
+        </details>
+        <!-- Rodapé do Form -->
+        <div class="pt-4 border-t border-[#eee] flex items-center justify-between">
+          <button id="btn-modal-excluir" type="button" onclick="confirmarExclusaoClienteModal()" class="px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer">Excluir</button>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="fecharModalCliente()" class="px-4 py-2 text-xs font-semibold text-[#666] bg-[#f5f5f5] hover:bg-[#e8e8e8] rounded-xl cursor-pointer">Cancelar</button>
+            <button id="btn-modal-salvar" type="submit" class="px-5 py-2 text-xs font-bold text-[#002726] bg-[#93F574] hover:bg-[#82e265] rounded-xl shadow-xs cursor-pointer">Salvar Alterações</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <!-- Painel Direito: Timeline -->
+    <div class="flex-[1.5] min-w-[320px] bg-[#fcfcfc] flex flex-col border-t md:border-t-0 border-[#eee]">
+      <div class="p-4 border-b border-[#eee] bg-white shrink-0 space-y-2">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-[#002726]">Histórico & Timeline</h3>
+          <span id="lbl-timeline-notes-count" class="text-[11px] font-semibold text-[#888] bg-[#f0f0f0] px-2 py-0.5 rounded-full">0 registros</span>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <div class="flex rounded-lg border border-[#e0e0e0] overflow-hidden text-[11px] font-bold">
+            <button type="button" id="tl-filter-all"  onclick="setTimelineFilter('all')"  class="px-3 py-1 bg-[#002726] text-[#93F574] cursor-pointer transition-colors">Todos</button>
+            <button type="button" id="tl-filter-ig"   onclick="setTimelineFilter('ig')"   class="px-3 py-1 bg-white text-[#555] hover:bg-[#f5f5f5] cursor-pointer transition-colors border-l border-[#e0e0e0]">IG</button>
+            <button type="button" id="tl-filter-blv"  onclick="setTimelineFilter('blv')"  class="px-3 py-1 bg-white text-[#555] hover:bg-[#f5f5f5] cursor-pointer transition-colors border-l border-[#e0e0e0]">BLV</button>
+          </div>
+          <input type="date" id="tl-filter-date" onchange="setTimelineFilter(currentTimelineFilter)" class="text-[11px] px-2 py-1 border border-[#e0e0e0] rounded-lg outline-none focus:border-[#7F76FF] text-[#555] cursor-pointer" title="Filtrar por data" />
+          <button type="button" onclick="document.getElementById('tl-filter-date').value=''; setTimelineFilter(currentTimelineFilter)" class="text-[10px] text-[#aaa] hover:text-[#555] cursor-pointer transition-colors">Limpar data</button>
+        </div>
+      </div>
+      <div class="p-4 bg-white border-b border-[#eee] space-y-2 shrink-0">
+        <textarea id="inp-nova-nota-timeline" rows="2" placeholder="Adicionar nota de atendimento, resumo de ligação ou WhatsApp..." class="w-full p-2.5 bg-[#fdfdfd] border border-[#ddd] rounded-xl text-xs outline-none focus:border-[#7F76FF] transition-all resize-none"></textarea>
+        <!-- Campo de anexo (oculto por padrão) -->
+        <div id="timeline-anexo-row" class="hidden space-y-1.5">
+          <input type="text" id="inp-nota-nome-anexo" placeholder="Nome do anexo (ex: Contrato, Proposta, Print erro...)" class="w-full p-2 bg-[#fdfdfd] border border-[#ddd] rounded-xl text-xs outline-none focus:border-[#7F76FF] transition-all" />
+          <input type="url" id="inp-nota-link-anexo" placeholder="Cole o link do Google Drive ou documento externo..." class="w-full p-2 bg-[#fdfdfd] border border-[#ddd] rounded-xl text-xs outline-none focus:border-[#7F76FF] transition-all" />
+        </div>
+        <div class="flex justify-between items-center">
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] text-[#888]">Ctrl+Enter para salvar</span>
+            <button type="button" onclick="toggleAnexoTimeline()" id="btn-anexo-timeline" title="Adicionar link de anexo"
+              class="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg border border-[#ddd] text-[#888] hover:text-[#7F76FF] hover:border-[#7F76FF] transition-colors cursor-pointer">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+              Anexo
+            </button>
+          </div>
+          <button type="button" onclick="adicionarNotaTimelineHandler()" class="px-3 py-1.5 bg-[#002726] hover:bg-[#003835] text-[#93F574] font-bold text-xs rounded-lg cursor-pointer">Registrar</button>
+        </div>
+      </div>
+      <div id="list-timeline-notes" class="flex-1 p-4 space-y-3 overflow-y-auto text-xs"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ATIVIDADE BLV -->
+<div id="atividade-modal-overlay" class="hidden fixed inset-0 bg-[#002726]/40 backdrop-blur-sm z-50 items-center justify-center p-4">
+  <div onclick="event.stopPropagation()" class="bg-white rounded-3xl w-full max-w-lg shadow-[0_24px_48px_rgba(0,0,0,0.2)] border border-[#eee] overflow-hidden flex flex-col">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-[#7F76FF] to-[#5b52cc] text-white px-6 py-4 flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+        </div>
+        <h3 id="atividade-modal-title" class="font-bold text-sm">Nova Atividade</h3>
+      </div>
+      <button onclick="fecharModalAtividade()" class="w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center cursor-pointer">✕</button>
+    </div>
+    <!-- Form -->
+    <form onsubmit="salvarAtividadeModal(event)" class="flex-1">
+      <div class="p-6 space-y-4 text-xs">
+        <!-- Empresa -->
+        <div>
+          <label class="block font-bold text-[#555] mb-1 uppercase tracking-wide text-[10px]">Empresa *</label>
+          <input type="text" id="am-empresa" required placeholder="Nome da empresa..." class="w-full p-2.5 bg-[#fafafa] border border-[#ddd] rounded-xl text-xs outline-none focus:border-[#7F76FF] transition-all" />
+        </div>
+        <!-- Título -->
+        <div>
+          <label class="block font-bold text-[#555] mb-1 uppercase tracking-wide text-[10px]">Título *</label>
+          <input type="text" id="am-titulo" required placeholder="Título da atividade..." class="w-full p-2.5 bg-[#fafafa] border border-[#ddd] rounded-xl text-xs outline-none focus:border-[#7F76FF] transition-all" />
+        </div>
+        <!-- Followup -->
+        <div>
+          <label class="block font-bold text-[#555] mb-1 uppercase tracking-wide text-[10px]">Followup / Observação</label>
+          <textarea id="am-followup" rows="3" placeholder="Detalhes do followup, próximos passos, observações..." class="w-full p-2.5 bg-[#fafafa] border border-[#ddd] rounded-xl text-xs outline-none focus:border-[#7F76FF] transition-all resize-none"></textarea>
+        </div>
+        <!-- Criado por -->
+        <div>
+          <label class="block font-bold text-[#555] mb-1 uppercase tracking-wide text-[10px]">Criado por</label>
+          <input type="text" id="am-criado-por" placeholder="Seu nome..." class="w-full p-2.5 bg-[#fafafa] border border-[#ddd] rounded-xl text-xs outline-none focus:border-[#7F76FF] transition-all" />
+        </div>
+      </div>
+      <!-- Footer -->
+      <div class="px-6 py-4 border-t border-[#eee] flex items-center justify-between bg-[#fcfcfc]">
+        <button id="am-btn-delete" type="button" onclick="excluirAtividade(atividadeModalId); fecharModalAtividade();" class="hidden px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer">Excluir</button>
+        <div class="flex items-center gap-2 ml-auto">
+          <button type="button" onclick="fecharModalAtividade()" class="px-4 py-2 text-xs font-semibold text-[#666] bg-[#f5f5f5] hover:bg-[#e8e8e8] rounded-xl cursor-pointer">Cancelar</button>
+          <button id="am-btn-save" type="submit" class="px-5 py-2 text-xs font-bold text-white bg-[#7F76FF] hover:bg-[#6b62e8] rounded-xl shadow-sm cursor-pointer">Salvar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL PROJETO -->
+<div id="projeto-modal-overlay" class="hidden fixed inset-0 bg-[#002726]/40 backdrop-blur-sm z-50 items-center justify-center p-4">
+  <div onclick="event.stopPropagation()" class="bg-white rounded-3xl w-full max-w-xl shadow-[0_24px_48px_rgba(0,0,0,0.2)] border border-[#eee] overflow-hidden flex flex-col max-h-[90vh]">
+    <!-- Header -->
+    <div class="bg-[#002726] text-white px-6 py-4 flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#93F574] to-[#7F76FF] flex items-center justify-center">
+          <svg class="w-5 h-5 text-[#002726]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+        </div>
+        <h3 id="projeto-modal-title" class="font-bold text-sm">Novo Projeto</h3>
+      </div>
+      <button onclick="fecharModalProjeto()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer">✕</button>
+    </div>
+    <!-- Form -->
+    <form onsubmit="salvarProjetoModal(event)" class="flex-1 overflow-y-auto">
+      <div class="p-6 space-y-4 text-xs">
+        <!-- Descrição -->
+        <div>
+          <label class="block font-bold text-[#555] mb-1 uppercase tracking-wide text-[10px]">Descrição da solicitação *</label>
+          <textarea id="pm-descricao" rows="3" required placeholder="Descreva o que está sendo solicitado..." class="w-full p-2.5 bg-[#fafafa] border border-[#ddd] rounded-xl text-xs outline-none focus:border-[#7F76FF] transition-all resize-none"></textarea>
+        </div>
+        <!-- Impacto -->
+        <div>
+          <label class="block font-bold text-[#555] mb-1 uppercase tracking-wide text-[10px]">Impacto esperado</label>
+          <textarea id="pm-impacto" rows="2" placeholder="Qual é o benefício ou resultado esperado?" class="w-full p-2.5 bg-[#fafafa] border border-[#ddd] rounded-xl text-xs outline-none focus:border-[#7F76FF] transition-all resize-none"></textarea>
+        </div>
+        <!-- Row: Equipe + Solicitante + Prioridade -->
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold text-[#555] mb-1 uppercase tracking-wide text-[10px]">Equipe</label>
+            <select id="pm-equipe" class="w-full p-2 bg-[#fafafa] border border-[#ddd] rounded-xl text-xs outline-none focus:border-[#7F76FF] cursor-pointer"></select>
+          </div>
+          <div>
+            <label class="block font-bold text-[#555] mb-1 uppercase tracking-wide text-[10px]">Solicitante</label>
+            <select id="pm-solicitante" class="w-full p-2 bg-[#fafafa] border border-[#ddd] rounded-xl text-xs outline-none focus:border-[#7F76FF] cursor-pointer"></select>
+          </div>
+          <div>
+            <label class="block font-bold text-[#555] mb-1 uppercase tracking-wide text-[10px]">Prioridade</label>
+            <select id="pm-prioridade" class="w-full p-2 bg-[#fafafa] border border-[#ddd] rounded-xl text-xs outline-none focus:border-[#7F76FF] cursor-pointer"></select>
+          </div>
+        </div>
+        <!-- Row: Status + Data Limite + Atendida -->
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold text-[#555] mb-1 uppercase tracking-wide text-[10px]">Status</label>
+            <select id="pm-status" class="w-full p-2 bg-[#fafafa] border border-[#ddd] rounded-xl text-xs outline-none focus:border-[#7F76FF] cursor-pointer"></select>
+          </div>
+          <div>
+            <label class="block font-bold text-[#555] mb-1 uppercase tracking-wide text-[10px]">Data Limite</label>
+            <input type="date" id="pm-data-limite" class="w-full p-2 bg-[#fafafa] border border-[#ddd] rounded-xl text-xs outline-none focus:border-[#7F76FF]" />
+          </div>
+          <div>
+            <label class="block font-bold text-[#555] mb-1 uppercase tracking-wide text-[10px]">Atendida?</label>
+            <select id="pm-atendida" class="w-full p-2 bg-[#fafafa] border border-[#ddd] rounded-xl text-xs outline-none focus:border-[#7F76FF] cursor-pointer"></select>
+          </div>
+        </div>
+        <!-- SLA + Dúvida Analista -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-[#555] mb-1 uppercase tracking-wide text-[10px]">SLA</label>
+            <input type="text" id="pm-sla" placeholder="ex: 5 dias úteis" class="w-full p-2 bg-[#fafafa] border border-[#ddd] rounded-xl text-xs outline-none focus:border-[#7F76FF]" />
+          </div>
+          <div>
+            <label class="block font-bold text-[#555] mb-1 uppercase tracking-wide text-[10px]">Dúvida do Analista</label>
+            <input type="text" id="pm-duvida" placeholder="Pergunta ou dúvida..." class="w-full p-2 bg-[#fafafa] border border-[#ddd] rounded-xl text-xs outline-none focus:border-[#7F76FF]" />
+          </div>
+        </div>
+        <!-- Anexo -->
+        <div>
+          <label class="block font-bold text-[#555] mb-1 uppercase tracking-wide text-[10px]">Anexo / Link</label>
+          <input type="text" id="pm-anexo" placeholder="URL de documentação, sheet ou drive..." class="w-full p-2 bg-[#fafafa] border border-[#ddd] rounded-xl text-xs outline-none focus:border-[#7F76FF]" />
+        </div>
+      </div>
+      <!-- Footer -->
+      <div class="px-6 py-4 border-t border-[#eee] flex items-center justify-between shrink-0 bg-[#fcfcfc]">
+        <button id="pm-btn-delete" type="button" onclick="excluirProjetoModal()" class="hidden px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer">Excluir</button>
+        <div class="flex items-center gap-2 ml-auto">
+          <button type="button" onclick="fecharModalProjeto()" class="px-4 py-2 text-xs font-semibold text-[#666] bg-[#f5f5f5] hover:bg-[#e8e8e8] rounded-xl cursor-pointer">Cancelar</button>
+          <button id="pm-btn-save" type="submit" class="px-5 py-2 text-xs font-bold text-[#002726] bg-[#93F574] hover:bg-[#82e265] rounded-xl shadow-xs cursor-pointer">Salvar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL DISPARO WHATSAPP -->
+<div id="modal-disparo-whats" class="hidden fixed inset-0 bg-[#002726]/40 backdrop-blur-sm z-50 items-center justify-center p-4">
+  <div onclick="event.stopPropagation()" class="bg-white rounded-3xl w-full max-w-lg shadow-[0_24px_48px_rgba(0,0,0,0.2)] border border-[#eee] overflow-hidden flex flex-col">
+    <div class="bg-[#002726] text-white p-5 flex items-center justify-between">
+      <div class="flex items-center gap-3"><div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#93F574] to-[#7F76FF] text-[#002726] flex items-center justify-center font-bold"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg></div><div><h3 class="font-bold text-sm text-white">Disparo WhatsApp IG</h3><p id="lbl-whats-cliente-subtitle" class="text-[11px] text-[#93F574]">Empresa • (Sem telefone)</p></div></div>
+      <button onclick="fecharDisparoWhatsModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer">✕</button>
+    </div>
+    <div class="p-5 space-y-4 text-xs">
+      <div><label class="block font-bold text-[#666] uppercase tracking-wider mb-2">Escolha o Tipo de Mensagem:</label><div id="grid-whats-templates" class="grid grid-cols-2 gap-2"></div></div>
+      <div id="box-whats-agenda-link"><label class="block font-bold text-[#666] mb-1">Link da Agenda:</label><input type="url" id="input-whats-agenda-link" oninput="updateWhatsMessagePreview()" class="w-full p-2.5 bg-[#fafafa] border border-[#ddd] rounded-xl text-xs outline-none focus:border-[#7F76FF] font-mono" /></div>
+      <div><label class="block font-bold text-[#666] mb-1">Texto Formatado:</label><div id="txt-whats-message-preview" class="p-3.5 bg-[#fafafa] border border-[#eee] rounded-xl text-xs text-[#333] whitespace-pre-wrap font-sans max-h-48 overflow-y-auto leading-relaxed"></div></div>
+    </div>
+    <div class="p-4 bg-[#fcfcfc] border-t border-[#eee] flex items-center justify-between">
+      <button type="button" onclick="copiarTextoWhats()" class="px-3.5 py-2 bg-white hover:bg-[#f0f0f0] border border-[#ddd] rounded-xl text-xs font-bold text-[#444] flex items-center gap-1.5 transition-colors cursor-pointer"><span id="lbl-btn-copiar-whats">Copiar Texto</span></button>
+      <a id="btn-open-wa-external" href="#" target="_blank" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-transform active:scale-95"><span>Abrir no WhatsApp</span></a>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="/js/supabase-client.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="/js/data.js"></script>
+<script src="/js/data-blv.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/kanban.js"></script>
+<script src="/js/agenda.js"></script>
+<script src="/js/metrics.js"></script>
+<script src="/js/settings.js"></script>
+<script src="/js/atividades.js"></script>
+<script src="/js/projetos.js"></script>
+<script src="/js/modal.js"></script>
+<script src="/js/whatsapp.js"></script>
+<script src="/js/ajuda.js"></script>
+<script src="/js/base-conhecimento.js"></script>
+<script src="/js/chat-agente.js"></script>
+<script src="/js/feedback.js"></script>
+<script src="/js/main.js"></script>
+
+<!-- CHAT AGENTE IA — Floating Widget -->
+<!-- SOLICITAÇÃO FLUTUANTE -->
+<button type="button" onclick="abrirModalFeedback()" title="Nova Solicitação"
+  class="fixed bottom-6 right-24 z-[9998] w-14 h-14 rounded-2xl shadow-xl flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95 select-none"
+  style="background: linear-gradient(135deg, #7F76FF 0%, #002726 100%);">
+  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+</button>
+
+<div id="chat-agente-container" class="fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-3 select-none"></div>
+
+
+<!-- MODAL SOLICITAÇÃO (Feedback flutuante) -->
+<div id="feedback-modal-overlay" class="hidden fixed inset-0 bg-[#002726]/40 backdrop-blur-sm z-[10000] items-center justify-center p-4">
+  <div onclick="event.stopPropagation()" class="bg-white rounded-2xl w-full max-w-lg shadow-[0_16px_48px_rgba(0,0,0,0.18)] border border-[#eee] overflow-hidden flex flex-col max-h-[90vh]">
+    <!-- Header -->
+    <div class="shrink-0 flex items-center justify-between px-5 py-4 border-b border-[#eee]" style="background: linear-gradient(135deg, #002726 0%, #003d3c 100%);">
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:rgba(127,118,255,0.3)">
+          <svg class="w-4 h-4 text-[#7F76FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-white">Nova Solicitação</p>
+          <p class="text-[10px] text-white/50">Será salva em Solicitações Internas</p>
+        </div>
+      </div>
+      <button type="button" onclick="fecharModalFeedback()" class="w-7 h-7 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors cursor-pointer">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <!-- Body -->
+    <div class="overflow-y-auto p-5 space-y-4">
+      <!-- Descrição -->
+      <div>
+        <label class="block text-xs font-bold text-[#002726] mb-1.5">Descrição <span class="text-rose-500">*</span></label>
+        <textarea id="fb-descricao" rows="3" placeholder="O que você precisa? Descreva com detalhes..."
+          class="w-full p-3 bg-[#fafafa] border border-[#ddd] rounded-xl text-xs text-[#1a1a1a] placeholder:text-[#aaa] outline-none focus:border-[#7F76FF] transition-all resize-none"></textarea>
+      </div>
+      <!-- Impacto -->
+      <div>
+        <label class="block text-xs font-bold text-[#002726] mb-1.5">Impacto esperado</label>
+        <textarea id="fb-impacto" rows="2" placeholder="Qual resultado ou melhoria isso traz?"
+          class="w-full p-3 bg-[#fafafa] border border-[#ddd] rounded-xl text-xs text-[#1a1a1a] placeholder:text-[#aaa] outline-none focus:border-[#7F76FF] transition-all resize-none"></textarea>
+      </div>
+      <!-- Prioridade + Data Limite -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-[#002726] mb-1.5">Prioridade</label>
+          <select id="fb-prioridade" class="w-full p-2.5 bg-[#fafafa] border border-[#ddd] rounded-xl text-xs text-[#1a1a1a] outline-none focus:border-[#7F76FF] transition-all">
+            <option value="">—</option>
+            <option value="Baixa">Baixa</option>
+            <option value="Média">Média</option>
+            <option value="Alta">Alta</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-[#002726] mb-1.5">Data limite</label>
+          <input type="date" id="fb-data-limite" class="w-full p-2.5 bg-[#fafafa] border border-[#ddd] rounded-xl text-xs text-[#1a1a1a] outline-none focus:border-[#7F76FF] transition-all" />
+        </div>
+      </div>
+      <!-- Anexo -->
+      <div>
+        <label class="block text-xs font-bold text-[#002726] mb-1.5">Link de anexo</label>
+        <input type="url" id="fb-anexo" placeholder="https://drive.google.com/..." class="w-full p-2.5 bg-[#fafafa] border border-[#ddd] rounded-xl text-xs text-[#1a1a1a] placeholder:text-[#aaa] outline-none focus:border-[#7F76FF] transition-all" />
+      </div>
+      <!-- Solicitante / Equipe (read-only) -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-[#002726] mb-1.5">Solicitante</label>
+          <input type="text" id="fb-solicitante" readonly class="w-full p-2.5 bg-[#f0f0f0] border border-[#ddd] rounded-xl text-xs text-[#555] outline-none cursor-default" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-[#002726] mb-1.5">Equipe</label>
+          <input type="text" id="fb-equipe" readonly class="w-full p-2.5 bg-[#f0f0f0] border border-[#ddd] rounded-xl text-xs text-[#555] outline-none cursor-default" />
+        </div>
+      </div>
+    </div>
+    <!-- Footer -->
+    <div class="shrink-0 px-5 py-4 border-t border-[#eee] flex gap-2">
+      <button type="button" onclick="fecharModalFeedback()" class="flex-1 py-2.5 text-xs font-bold text-[#555] rounded-xl border border-[#ddd] bg-white hover:bg-[#f5f5f5] cursor-pointer transition-all">
+        Cancelar
+      </button>
+      <button type="button" id="fb-btn-enviar" onclick="enviarFeedback()"
+        class="flex-1 py-2.5 text-xs font-bold text-[#002726] rounded-xl cursor-pointer transition-all"
+        style="background: linear-gradient(135deg, #93F574 0%, #7ee860 100%);">
+        Enviar Solicitação
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST container -->
+<div id="toast-container" class="fixed top-4 right-4 z-[10001] space-y-2 pointer-events-none"></div>
+
+</body>
+</html>

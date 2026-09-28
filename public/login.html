@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bling LINK – Acesso</title>
+  <link rel="icon" href="/logo-bling.svg" type="image/svg+xml" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #002726; }
+    .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); }
+    .input-field {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff; outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-field:focus { border-color: #93F574; }
+    .input-field::placeholder { color: rgba(255,255,255,0.4); }
+    .btn-primary {
+      background: #93F574; color: #002726; font-weight: 700;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-primary:hover { background: #82e265; }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+  <div class="w-full max-w-sm">
+    <!-- Logo -->
+    <div class="flex flex-col items-center mb-8">
+      <img src="/logo-bling.svg" alt="Bling" class="w-16 h-16 rounded-2xl shadow-xl mb-4" />
+      <h1 class="text-2xl font-bold text-white tracking-tight">Bling LINK</h1>
+      <p class="text-sm text-white/50 mt-1">Operacional de Implantação</p>
+    </div>
+
+    <!-- STEP 1: Email -->
+    <div id="step-email" class="card rounded-2xl p-6">
+      <h2 class="text-base font-bold text-white mb-1">Entrar com e-mail</h2>
+      <p class="text-xs text-white/50 mb-5">Enviaremos um link de acesso para o seu e-mail Bling.</p>
+      <form id="form-email" onsubmit="enviarLink(event)">
+        <div class="mb-4">
+          <label class="block text-xs font-semibold text-white/70 mb-1.5 uppercase tracking-wide">E-mail</label>
+          <input id="inp-email" type="email" placeholder="seu.nome@bling.com.br" required autocomplete="email"
+            class="input-field w-full rounded-xl px-4 py-3 text-sm" />
+        </div>
+        <div id="msg-email" class="hidden text-xs text-rose-400 mb-3 p-2 bg-rose-400/10 rounded-lg"></div>
+        <button type="submit" id="btn-enviar" class="btn-primary w-full py-3 rounded-xl text-sm cursor-pointer">
+          Enviar Link de Acesso
+        </button>
+      </form>
+    </div>
+
+    <!-- STEP 2: Aguardando clique no link -->
+    <div id="step-sent" class="card rounded-2xl p-6 hidden">
+      <div class="flex flex-col items-center text-center gap-3">
+        <div class="w-14 h-14 rounded-full bg-[#93F574]/15 flex items-center justify-center mb-1">
+          <svg class="w-7 h-7 text-[#93F574]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <h2 class="text-base font-bold text-white">Link enviado!</h2>
+        <p class="text-xs text-white/60 leading-relaxed">
+          Enviamos um link de acesso para<br/>
+          <strong class="text-white/90" id="lbl-email-destino"></strong>
+        </p>
+        <p class="text-xs text-white/40 leading-relaxed px-2">
+          Verifique sua caixa de entrada e clique no link para entrar.
+          Esta aba reconhecerá a sessão automaticamente.
+        </p>
+
+        <!-- Spinner de espera -->
+        <div class="flex items-center gap-2 mt-1">
+          <svg class="animate-spin w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+          </svg>
+          <span class="text-[11px] text-white/30">Aguardando confirmação…</span>
+        </div>
+
+        <div class="w-full pt-3 border-t border-white/10 flex items-center justify-between">
+          <button type="button" onclick="voltarEmail()"
+            class="text-xs text-white/40 hover:text-white/70 transition-colors cursor-pointer">
+            ← Outro e-mail
+          </button>
+          <button type="button" id="btn-reenviar" onclick="reenviarLink()" disabled
+            class="text-xs text-white/40 hover:text-white/70 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+            Reenviar (<span id="reenviar-countdown">60</span>s)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-center text-[11px] text-white/30 mt-6">Apenas e-mails @bling.com.br autorizados</p>
+  </div>
+
+  <script>
+    let _sb = null;
+    let _emailAtual = '';
+    let _reenviarTimer = null;
+    let _pollTimer = null;
+
+    async function initSb() {
+      if (_sb) return _sb;
+      const config = await fetch('/api/config').then(r => r.json());
+      _sb = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey, {
+        auth: {
+          storage: window.sessionStorage,
+          autoRefreshToken: true,
+          persistSession: true,
+          detectSessionInUrl: true
+        }
+      });
+
+      // Se já existe sessão válida e autorizada → vai direto pro app
+      const { data: { session } } = await _sb.auth.getSession();
+      if (session) {
+        const me = await fetch('/api/auth/me', {
+          headers: { Authorization: `Bearer ${session.access_token}` }
+        });
+        if (me.ok) { window.location.href = '/'; return _sb; }
+        await _sb.auth.signOut();
+      }
+
+      // Quando a sessão for estabelecida (ex: magic link clicado em outra aba)
+      _sb.auth.onAuthStateChange(async (_event, session) => {
+        if (_event === 'SIGNED_IN' && session) {
+          const me = await fetch('/api/auth/me', {
+            headers: { Authorization: `Bearer ${session.access_token}` }
+          });
+          if (me.ok) {
+            window.location.href = '/';
+          } else {
+            await _sb.auth.signOut();
+            mostrarErro('E-mail não autorizado. Contate o administrador.');
+          }
+        }
+      });
+
+      return _sb;
+    }
+
+    async function enviarLink(event) {
+      event.preventDefault();
+      const email = document.getElementById('inp-email').value.trim().toLowerCase();
+      const btn = document.getElementById('btn-enviar');
+      const msg = document.getElementById('msg-email');
+      msg.classList.add('hidden');
+      btn.textContent = 'Enviando…'; btn.disabled = true;
+
+      try {
+        const sb = await initSb();
+        const { error } = await sb.auth.signInWithOtp({
+          email,
+          options: {
+            shouldCreateUser: true,
+            emailRedirectTo: window.location.origin
+          }
+        });
+        if (error) throw error;
+        _emailAtual = email;
+        document.getElementById('lbl-email-destino').textContent = email;
+        document.getElementById('step-email').classList.add('hidden');
+        document.getElementById('step-sent').classList.remove('hidden');
+        iniciarContador();
+        iniciarPolling();
+      } catch (err) {
+        msg.textContent = err.message || 'Erro ao enviar o link. Tente novamente.';
+        msg.classList.remove('hidden');
+      } finally {
+        btn.textContent = 'Enviar Link de Acesso'; btn.disabled = false;
+      }
+    }
+
+    function voltarEmail() {
+      clearInterval(_reenviarTimer);
+      clearInterval(_pollTimer);
+      document.getElementById('step-sent').classList.add('hidden');
+      document.getElementById('step-email').classList.remove('hidden');
+      document.getElementById('msg-email').classList.add('hidden');
+    }
+
+    async function reenviarLink() {
+      const btn = document.getElementById('btn-reenviar');
+      btn.disabled = true;
+      try {
+        const sb = await initSb();
+        await sb.auth.signInWithOtp({
+          email: _emailAtual,
+          options: { shouldCreateUser: true, emailRedirectTo: window.location.origin }
+        });
+        iniciarContador();
+      } catch { btn.disabled = false; }
+    }
+
+    // Polling leve: verifica se a sessão foi estabelecida (para o caso de o link ser clicado
+    // no mesmo navegador e a tab de login não detectar via onAuthStateChange)
+    function iniciarPolling() {
+      clearInterval(_pollTimer);
+      _pollTimer = setInterval(async () => {
+        if (!_sb) return;
+        const { data: { session } } = await _sb.auth.getSession();
+        if (session) {
+          clearInterval(_pollTimer);
+          const me = await fetch('/api/auth/me', {
+            headers: { Authorization: `Bearer ${session.access_token}` }
+          });
+          if (me.ok) window.location.href = '/';
+        }
+      }, 3000);
+    }
+
+    function iniciarContador() {
+      clearInterval(_reenviarTimer);
+      const btn = document.getElementById('btn-reenviar');
+      btn.disabled = true;
+      let s = 60;
+      document.getElementById('reenviar-countdown').textContent = s;
+      btn.innerHTML = `Reenviar (<span id="reenviar-countdown">${s}</span>s)`;
+      _reenviarTimer = setInterval(() => {
+        s--;
+        const el = document.getElementById('reenviar-countdown');
+        if (el) el.textContent = s;
+        if (s <= 0) {
+          clearInterval(_reenviarTimer);
+          btn.disabled = false;
+          btn.textContent = 'Reenviar link';
+        }
+      }, 1000);
+    }
+
+    function mostrarErro(msg) {
+      voltarEmail();
+      const el = document.getElementById('msg-email');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    initSb().catch(console.error);
+  </script>
+</body>
+</html>

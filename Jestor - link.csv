@@ -1,0 +1,49 @@
+Nome,Modo de preenchimento
+ID,Automático
+Agenda,Automático
+Nome da empresa,Automático
+CPF/CNPJ,Automático
+Cidade,Automático
+Conversa Octa,Manual
+Criado em,Automático
+Criação da Agenda,Automático
+Cupom,Automático
+Data Inscrição,Automático
+Descrição do estorno,Manual
+Detalhe Reagenda,Manual
+Dias Atualizado,Automático
+Dias Criado,Automático
+E-mail da Agenda,Automático
+E-mail da Empresa,Automático
+Enviado por,Automático
+Enviar Reagenda,Manual
+Confirma Envio Top (Preenchimento automático),Automático
+Estado,Automático
+Gerar agenda,Manual
+Histórico da agenda,Automático
+ID Empresa,Automático
+IG Agendada,Manual
+IG Comprada,Automático
+IG Realizada,Manual
+Implantador,Automático
+Informações Pré,Manual
+Informações Pós,Automático
+[interno] Selecionar implantador,Manual
+Link do Meet,Automático
+Link para Agendar,Automático
+Link Reagenda,Automático
+Motivo do estorno,Manual
+Nome do contato,Automático
+Plano,Automático
+Qtd. Reagendamento,Automático
+Regime Tributário,Automático
+Situação da conta,Automático
+Status,Manual
+Tempo Reagenda,Manual
+Ticket de estorno,Manual
+Tipo Reagenda,Manual
+Top Especialista,Manual
+Usuário de suporte,Automático
+Valor IG,Automático
+Whatsapp,Automático
+Última edição,Automático
