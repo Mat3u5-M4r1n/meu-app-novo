@@ -238,8 +238,8 @@ function preencherFormulario(c) {
     set('inp-modal-descricaoConexao', c.descricaoConexao);
   }
 
-  // Aplicar/remover bloqueio de campos automáticos (apenas IG)
-  aplicarBloqueiosIG(currentTeam === 'ig');
+  // Aplicar/remover bloqueio de campos automáticos (apenas IG e não-admin)
+  aplicarBloqueiosIG(currentTeam === 'ig' && currentUser?.role !== 'admin');
 
   // Metadados (collapsible)
   const metaCriacao = document.getElementById('meta-txt-criacaoDaAgenda');

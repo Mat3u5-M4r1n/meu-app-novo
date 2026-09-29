@@ -25,7 +25,7 @@ const supabase = createClient(
 // ── RBAC ──────────────────────────────────────────────────────────────────────
 const USERS = {
   'mateus.marin@bling.com.br':    { name: 'Mateus Marin',    initials: 'MM', role: 'admin', teams: ['ig', 'blv'] },
-  'manuela.curti@bling.com.br':   { name: 'Manuela Curti',   initials: 'MC', role: 'agent', teams: ['ig'] },
+  'manuela.curti@bling.com.br':   { name: 'Manuela Curti',   initials: 'MC', role: 'admin', teams: ['ig', 'blv'] },
   'luan.cavalheiro@bling.com.br': { name: 'Luan Cavalheiro', initials: 'LC', role: 'agent', teams: ['blv'] }
 };
 
