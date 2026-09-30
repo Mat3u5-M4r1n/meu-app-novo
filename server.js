@@ -26,7 +26,8 @@ const supabase = createClient(
 const USERS = {
   'mateus.marin@bling.com.br':    { name: 'Mateus Marin',    initials: 'MM', role: 'admin', teams: ['ig', 'blv'] },
   'manuela.curti@bling.com.br':   { name: 'Manuela Curti',   initials: 'MC', role: 'admin', teams: ['ig', 'blv'] },
-  'luan.cavalheiro@bling.com.br': { name: 'Luan Cavalheiro', initials: 'LC', role: 'agent', teams: ['blv'] }
+  'luan.cavalheiro@bling.com.br': { name: 'Luan Cavalheiro', initials: 'LC', role: 'agent', teams: ['blv'] },
+  'ana.caio@bling.com.br':        { name: 'Ana Caio',        initials: 'AC', role: 'agent', teams: ['blv'] }
 };
 
 // ── snake_case ↔ camelCase ────────────────────────────────────────────────────
@@ -626,10 +627,18 @@ async function extrairTexto(buffer, mimetype, originalname) {
 app.use('/api/base-conhecimento', requireAuth);
 
 app.get('/api/base-conhecimento', async (req, res) => {
-  const { data, error } = await req.db
+  let query = req.db
     .from('base_conhecimento')
-    .select('id, nome_arquivo, tipo_arquivo, criado_em')
+    .select('id, nome_arquivo, tipo_arquivo, categoria_time, criado_em')
     .order('criado_em', { ascending: false });
+
+  // Agents see only their team's docs + general; admins see all
+  if (req.user.role !== 'admin') {
+    const team = req.user.teams[0] || 'geral';
+    query = query.in('categoria_time', [team, 'geral']);
+  }
+
+  const { data, error } = await query;
   if (error) return res.status(500).json({ error: error.message });
   res.json(data.map(rowToCamel));
 });
@@ -640,10 +649,13 @@ app.post('/api/base-conhecimento/upload', upload.single('arquivo'), async (req, 
 
   try {
     const conteudo = await extrairTexto(req.file.buffer, req.file.mimetype, req.file.originalname);
+    const categoriaTime = ['ig', 'blv', 'geral'].includes(req.body.categoriaTime)
+      ? req.body.categoriaTime : 'geral';
     const row = {
       nome_arquivo: req.file.originalname,
       tipo_arquivo: req.file.mimetype,
       conteudo: conteudo.trim(),
+      categoria_time: categoriaTime,
       criado_em: new Date().toISOString()
     };
     const { data, error } = await req.db.from('base_conhecimento').insert(row).select().single();
@@ -678,11 +690,16 @@ app.post('/api/chat-agente', requireAuth, async (req, res) => {
   const { pergunta, historico = [] } = req.body;
   if (!pergunta?.trim()) return res.status(400).json({ error: 'Pergunta vazia.' });
 
-  // 1. Buscar toda a base de conhecimento
-  const { data: docs, error: dbErr } = await req.db
+  // 1. Buscar documentos da base — filtrados pelo time do usuário (agentes) ou todos (admins)
+  let docsQuery = req.db
     .from('base_conhecimento')
     .select('nome_arquivo, conteudo')
     .order('criado_em', { ascending: false });
+  if (req.user.role !== 'admin') {
+    const team = req.user.teams[0] || 'geral';
+    docsQuery = docsQuery.in('categoria_time', [team, 'geral']);
+  }
+  const { data: docs, error: dbErr } = await docsQuery;
 
   if (dbErr) return res.status(500).json({ error: dbErr.message });
 
