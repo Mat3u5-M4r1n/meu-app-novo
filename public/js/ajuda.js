@@ -2,6 +2,7 @@
 // Gera todo o conteúdo dinamicamente via innerHTML para manter index.html enxuto.
 
 let _ajudaActiveCategory = 'primeiros-passos';
+let _ajudaActiveTeam     = 'ig'; // resolvido no momento de renderizar
 let _docsActiveSection   = 'visao-geral';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -10,18 +11,49 @@ let _docsActiveSection   = 'visao-geral';
 function renderHelpView() {
   const el = document.getElementById('view-section-ajuda');
   if (!el) return;
+
+  const isAdmin = currentUser?.role === 'admin';
+  // Admins usam o time atualmente selecionado na sidebar; agentes ficam travados no seu time
+  if (isAdmin) {
+    _ajudaActiveTeam = currentTeam || 'ig';
+  } else {
+    _ajudaActiveTeam = currentUser?.teams?.[0] || 'ig';
+  }
+
+  const subtitulo = _ajudaActiveTeam === 'blv'
+    ? 'Guia completo — Loja Virtual Bling'
+    : 'Guia completo — Implantação Guiada';
+
   el.innerHTML = `
   <div class="flex-1 flex flex-col overflow-hidden bg-[#F4F4F4]">
 
     <!-- Header -->
-    <div class="shrink-0 bg-[#002726] px-6 py-5 flex items-center gap-4 shadow-lg">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#93F574] to-[#7F76FF] flex items-center justify-center shrink-0">
-        <svg class="w-5 h-5 text-[#002726]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <div class="shrink-0 bg-[#002726] px-6 py-5 flex items-center justify-between gap-4 shadow-lg">
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#93F574] to-[#7F76FF] flex items-center justify-center shrink-0">
+          <svg class="w-5 h-5 text-[#002726]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-white">Central de Ajuda</h1>
+          <p class="text-xs text-white/50 mt-0.5" id="ajuda-subtitulo">${subtitulo}</p>
+        </div>
       </div>
-      <div>
-        <h1 class="text-base font-bold text-white">Central de Ajuda</h1>
-        <p class="text-xs text-white/50 mt-0.5">Guia completo de uso do Bling LINK Operacional</p>
-      </div>
+      ${isAdmin ? `
+      <!-- Toggle de time (admin only) -->
+      <div class="flex items-center gap-1 bg-white/10 rounded-xl p-1">
+        <button type="button" id="ajuda-toggle-ig" onclick="ajudaSwitchTeam('ig')"
+          class="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${_ajudaActiveTeam === 'ig' ? 'bg-[#93F574] text-[#002726]' : 'text-white/60 hover:text-white'}">
+          Implantação
+        </button>
+        <button type="button" id="ajuda-toggle-blv" onclick="ajudaSwitchTeam('blv')"
+          class="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${_ajudaActiveTeam === 'blv' ? 'bg-[#7F76FF] text-white' : 'text-white/60 hover:text-white'}">
+          Loja Virtual
+        </button>
+      </div>` : `
+      <!-- Badge do time (agentes) -->
+      <span class="text-xs font-bold px-3 py-1.5 rounded-xl ${_ajudaActiveTeam === 'blv' ? 'bg-[#7F76FF]/20 text-[#c4c0ff]' : 'bg-[#93F574]/20 text-[#93F574]'}">
+        ${_ajudaActiveTeam === 'blv' ? '🛍️ Loja Virtual' : '🚀 Implantação Guiada'}
+      </span>`}
     </div>
 
     <!-- Category Tabs -->
@@ -29,7 +61,7 @@ function renderHelpView() {
       ${[
         { id: 'primeiros-passos', label: '🚀 Primeiros Passos' },
         { id: 'kanban',           label: '📋 Kanban & Cards' },
-        { id: 'recursos',         label: '🔗 Links & Integrações' },
+        { id: 'recursos',         label: '🔗 Links & Recursos' },
         { id: 'permissoes',       label: '🔐 Permissões & Times' },
         { id: 'solicitacoes',     label: '📬 Solicitações Internas' },
         { id: 'faq',              label: '❓ FAQ' },
@@ -50,9 +82,31 @@ function renderHelpView() {
   </div>`;
 }
 
+function ajudaSwitchTeam(team) {
+  _ajudaActiveTeam = team;
+  // Atualiza botões do toggle
+  const btnIg  = document.getElementById('ajuda-toggle-ig');
+  const btnBlv = document.getElementById('ajuda-toggle-blv');
+  if (btnIg) {
+    btnIg.className = btnIg.className.replace(/bg-\S+|text-\[#002726\]|text-white\/60|hover:text-white/g, '').trim();
+    btnIg.classList.add('px-3','py-1.5','rounded-lg','text-xs','font-bold','transition-colors','cursor-pointer',
+      ...(team === 'ig' ? ['bg-[#93F574]','text-[#002726]'] : ['text-white/60','hover:text-white']));
+  }
+  if (btnBlv) {
+    btnBlv.className = btnBlv.className.replace(/bg-\S+|text-white\/60|hover:text-white/g, '').trim();
+    btnBlv.classList.add('px-3','py-1.5','rounded-lg','text-xs','font-bold','transition-colors','cursor-pointer',
+      ...(team === 'blv' ? ['bg-[#7F76FF]','text-white'] : ['text-white/60','hover:text-white']));
+  }
+  // Atualiza subtítulo
+  const sub = document.getElementById('ajuda-subtitulo');
+  if (sub) sub.textContent = team === 'blv' ? 'Guia completo — Loja Virtual Bling' : 'Guia completo — Implantação Guiada';
+  // Re-renderiza conteúdo
+  const area = document.getElementById('ajuda-content-area');
+  if (area) area.innerHTML = _ajudaRenderCategory(_ajudaActiveCategory);
+}
+
 function ajudaSwitchCategory(id) {
   _ajudaActiveCategory = id;
-  // Update tabs
   document.querySelectorAll('.ajuda-tab').forEach(btn => {
     const active = btn.id === `ajuda-tab-${id}`;
     btn.classList.toggle('border-[#93F574]', active);
@@ -111,13 +165,14 @@ function _warn(text) {
 }
 
 function _ajudaRenderCategory(id) {
+  const blv = _ajudaActiveTeam === 'blv';
   switch(id) {
-    case 'primeiros-passos': return _helpPrimeirosPassos();
-    case 'kanban':           return _helpKanban();
-    case 'recursos':         return _helpRecursos();
-    case 'permissoes':       return _helpPermissoes();
-    case 'solicitacoes':     return _helpSolicitacoes();
-    case 'faq':              return _helpFaq();
+    case 'primeiros-passos': return blv ? _helpPrimeirosPassosBLV() : _helpPrimeirosPassos();
+    case 'kanban':           return blv ? _helpKanbanBLV()          : _helpKanban();
+    case 'recursos':         return blv ? _helpRecursosBLV()        : _helpRecursos();
+    case 'permissoes':       return _helpPermissoes(); // mesma tabela para ambos
+    case 'solicitacoes':     return _helpSolicitacoes(); // canal compartilhado
+    case 'faq':              return blv ? _helpFaqBLV()             : _helpFaq();
     default: return '';
   }
 }
@@ -344,6 +399,146 @@ function _helpFaq() {
       { q: 'A busca no Kanban não encontra o cliente. Por quê?', a: 'A busca filtra por empresa, contato e outros campos visíveis no card. Se o campo que você quer buscar estiver oculto, ative-o em <strong>Campos no Card</strong> na topbar. A busca não lê campos que não estão sendo exibidos.' },
       { q: 'Posso acessar o sistema de casa?', a: 'O servidor roda em <code class="bg-[#f0f0f0] px-1 rounded font-mono">localhost:3000</code> — ou seja, precisa estar rodando na máquina local. Para acesso remoto, seria necessário publicar o servidor em um domínio externo (não configurado por padrão).' },
       { q: 'Como adiciono um novo usuário autorizado?', a: 'O acesso é controlado pelo objeto <code class="bg-[#f0f0f0] px-1 rounded font-mono">USERS</code> no arquivo <code class="bg-[#f0f0f0] px-1 rounded font-mono">server.js</code>. Um Admin deve adicionar o novo e-mail, nome, perfil (role) e times manualmente no código e reiniciar o servidor.' },
+    ])}
+    </div>
+  </div>`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTEÚDO BLV — LOJA VIRTUAL
+// ─────────────────────────────────────────────────────────────────────────────
+
+function _helpPrimeirosPassosBLV() {
+  return _card('🔑', 'Como acessar o sistema (Login)', `
+    <p>O Bling LINK usa autenticação por <strong>Magic Link</strong> — não há senha para memorizar.</p>
+    <div class="space-y-2 mt-2">
+      ${_step(1, 'Acesse <code class="bg-[#f0f0f0] px-1 rounded font-mono">https://meu-app-novo-bling.vercel.app</code> no seu navegador.')}
+      ${_step(2, 'Informe o seu <strong>e-mail corporativo @bling.com.br</strong> e clique em <strong>Enviar Link de Acesso</strong>.')}
+      ${_step(3, 'Verifique sua caixa de entrada. Um e-mail com o link de acesso chegará em até 1 minuto (verifique spam).')}
+      ${_step(4, 'Clique no link do e-mail. Você será redirecionado ao sistema já autenticado.')}
+      ${_step(5, 'O sistema valida seu e-mail e carrega o painel da <strong>Loja Virtual</strong> automaticamente.')}
+    </div>
+    ${_tip('O link expira em 1 hora e só pode ser usado uma vez. Se expirar, basta solicitar um novo na tela de login.')}
+    ${_warn('Apenas e-mails autorizados acessam o sistema. Caso receba erro 403, fale com o administrador.')}
+  `) + _card('🗂️', 'Entendendo a Interface da Loja Virtual', `
+    <p>Após o login, você verá o <strong>Kanban da Loja Virtual</strong> diretamente. A interface é dividida em:</p>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-2 text-xs">
+      <div class="p-3 bg-[#002726] text-white rounded-xl">
+        <div class="font-bold text-[#93F574] mb-1">① Menu Lateral</div>
+        <p class="text-white/70">Navegação entre módulos (Kanban, Agenda, Atividades, Solicitações). Exibe o seu nome e perfil.</p>
+      </div>
+      <div class="p-3 bg-[#f8fafc] border border-[#eee] rounded-xl">
+        <div class="font-bold text-[#002726] mb-1">② Topbar</div>
+        <p class="text-[#666]">Busca rápida por cliente, filtro por responsável e alternância de tema.</p>
+      </div>
+      <div class="p-3 bg-[#f8fafc] border border-[#eee] rounded-xl">
+        <div class="font-bold text-[#002726] mb-1">③ Área de Conteúdo</div>
+        <p class="text-[#666]">O módulo ativo: Kanban BLV, Agenda, Atividades ou outros.</p>
+      </div>
+    </div>
+    ${_tip('O módulo <strong>Atividades</strong> é exclusivo da Loja Virtual — use-o para registrar ações de suporte e follow-up com cada cliente.')}
+  `);
+}
+
+function _helpKanbanBLV() {
+  return _card('📋', 'O Kanban da Loja Virtual — Fases', `
+    <p>Cada coluna representa uma fase do processo de implantação da loja virtual. Os cards são os clientes.</p>
+    <div class="space-y-1.5 text-xs mt-3">
+      ${[
+        ['bg-slate-100 text-slate-700',   'Aguardando Contato',    'Cliente cadastrado. Aguardando primeiro contato.'],
+        ['bg-indigo-100 text-indigo-800', 'Contato conectado',     'Primeiro contato realizado com sucesso.'],
+        ['bg-amber-100 text-amber-800',   'Em implantação',        'Processo de configuração da loja em andamento.'],
+        ['bg-purple-100 text-purple-800', 'Aguardando cliente',    'Ação concluída pelo time. Aguardando retorno ou aprovação do cliente.'],
+        ['bg-emerald-200 text-emerald-950','Concluído',            'Loja implantada com sucesso.'],
+        ['bg-rose-100 text-rose-800',     'Cancelado',             'Cliente cancelou ou desistiu do processo.'],
+      ].map(([badge, label, desc]) => `
+        <div class="flex items-center gap-2 p-2 rounded-xl bg-[#fafafa] border border-[#f0f0f0]">
+          <span class="px-2 py-0.5 rounded-full font-bold text-[10px] shrink-0 ${badge}">${label}</span>
+          <span class="text-[#555]">${desc}</span>
+        </div>`).join('')}
+    </div>
+  `) + _card('✏️', 'Criar um Novo Card de Loja Virtual', `
+    <div class="space-y-2">
+      ${_step(1, 'Clique em <strong class="bg-[#93F574] text-[#002726] px-2 py-0.5 rounded-lg font-bold">+ Novo Registro</strong> na barra superior.')}
+      ${_step(2, 'Preencha o <strong>Nome da empresa</strong> e o <strong>CNPJ</strong>. Os demais campos podem ser completados depois.')}
+      ${_step(3, 'Selecione a <strong>Fase</strong> e o <strong>Responsável</strong>.')}
+      ${_step(4, 'Clique em <strong>Salvar</strong>. O card aparecerá na coluna correspondente à fase escolhida.')}
+    </div>
+    ${_warn('O CNPJ é único no sistema BLV. Tentar criar um cliente com CNPJ duplicado será bloqueado.')}
+  `) + _card('🖊️', 'Editar um Card de Loja Virtual', `
+    <p>Clique sobre qualquer card para abrir o painel de detalhes. Ele contém as abas:</p>
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs mt-2">
+      ${[
+        ['Contato','Empresa, CNPJ, nome do contato, telefone, cargo, site, e-mails, cidade.'],
+        ['Implantação','Fase, responsável, dia da implantação, conversa Octadesk, origem.'],
+        ['Pré/Pós','Informações de alinhamento prévio e resumo pós-sessão.'],
+      ].map(([tab, desc]) => `<div class="p-2.5 bg-[#fafafa] border border-[#eee] rounded-xl"><strong class="block text-[#002726] mb-0.5">${tab}</strong>${desc}</div>`).join('')}
+    </div>
+    <p class="mt-3">O painel lateral exibe a <strong>Timeline</strong> — registros de alterações e atividades em ordem cronológica.</p>
+    ${_tip('A timeline da Loja Virtual também mostra entradas do módulo <strong>Atividades</strong>, permitindo visualizar todo o histórico do cliente em um único lugar.')}
+  `) + _card('📝', 'Módulo de Atividades — Registrar ações de suporte', `
+    <div class="space-y-2">
+      ${_step(1, 'Clique em <strong>Atividades</strong> no menu lateral (ícone de lista).')}
+      ${_step(2, 'Clique em <strong>+ Nova Atividade</strong>.')}
+      ${_step(3, 'Selecione a <strong>Empresa</strong>, preencha o <strong>Título</strong> (resumo da ação) e o <strong>Follow-up</strong> (detalhes do que foi feito).')}
+      ${_step(4, 'Clique em <strong>Salvar</strong>. A atividade aparece na lista e também na timeline do card do cliente.')}
+    </div>
+    <p class="mt-2 text-xs text-[#666]">Atividades são vinculadas pelo nome da empresa. Certifique-se de que o nome digitado corresponde exatamente ao cadastrado no card do cliente.</p>
+  `);
+}
+
+function _helpRecursosBLV() {
+  return _card('🔗', 'Cruzamento de CNPJ — Loja Virtual ↔ Implantação Guiada', `
+    <p>Um mesmo cliente pode ter registros tanto na Loja Virtual quanto na Implantação Guiada. O sistema une esses dados automaticamente pelo CNPJ.</p>
+    <div class="space-y-2 mt-2">
+      ${_step('A', '<strong>Aba "Outro Time"</strong> — ao abrir um card com CNPJ preenchido, o sistema busca simultaneamente dados da Implantação Guiada e os exibe diretamente no modal.')}
+      ${_step('B', '<strong>Timeline Unificada</strong> — notas da Loja Virtual e de Atividades do mesmo CNPJ são combinadas em uma única timeline cronológica com badges de origem.')}
+    </div>
+    ${_tip('Se um cliente da Loja Virtual também tem IG, todas as interações dos dois times ficam visíveis em um único lugar.')}
+    ${_warn('O cruzamento depende do CNPJ estar preenchido e idêntico nos dois registros. Diferenças de formatação (com/sem pontuação) podem impedir o match.')}
+  `) + _card('💬', 'Botão Octadesk — Como Funciona na BLV', `
+    <p>O botão <strong>💬 Octa</strong> aparece nos cards quando o campo <em>Conversa Octadesk</em> está preenchido.</p>
+    <div class="space-y-1.5 text-xs mt-2">
+      <div class="p-2.5 bg-[#f8fafc] border border-[#eee] rounded-xl">Cole o link da conversa Octadesk no campo <strong>Conversa Octadesk</strong> (aba Implantação do card). O botão aparecerá automaticamente no card e no modal.</div>
+      <div class="p-2.5 bg-[#f8fafc] border border-[#eee] rounded-xl"><strong>Botão WhatsApp na BLV:</strong> abre diretamente o <em>app.octadesk.com/chat</em> em vez de abrir o WhatsApp (já que o atendimento BLV é centralizado no Octa).</div>
+    </div>
+  `) + _card('📊', 'Timeline da Loja Virtual — O que aparece', `
+    <p>A timeline de um card BLV reúne três tipos de registros:</p>
+    <div class="space-y-2 mt-2 text-xs">
+      <div class="flex items-start gap-2 p-2.5 bg-[#fafafa] border border-[#eee] rounded-xl">
+        <span class="font-bold text-[#7F76FF] shrink-0">BLV</span>
+        <span class="text-[#555]"><strong>Alterações de campo</strong> — toda vez que um campo do card é editado e salvo, uma entrada é criada automaticamente com o valor anterior e o novo.</span>
+      </div>
+      <div class="flex items-start gap-2 p-2.5 bg-[#fafafa] border border-[#eee] rounded-xl">
+        <span class="font-bold text-[#7F76FF] shrink-0">BLV</span>
+        <span class="text-[#555]"><strong>Atividades</strong> — registros do módulo Atividades vinculados ao mesmo nome de empresa.</span>
+      </div>
+      <div class="flex items-start gap-2 p-2.5 bg-[#fafafa] border border-[#eee] rounded-xl">
+        <span class="font-bold text-[#93F574] shrink-0">IG</span>
+        <span class="text-[#555]"><strong>Dados da Implantação Guiada</strong> — se o cliente tiver CNPJ cruzado com o time IG, as interações deles também aparecem aqui.</span>
+      </div>
+    </div>
+    ${_tip('Use o filtro de times (Todos / IG / BLV) e o filtro por data na timeline para encontrar rapidamente o que aconteceu em um dia específico.')}
+  `);
+}
+
+function _helpFaqBLV() {
+  return `<div class="bg-white rounded-2xl border border-[#eee] overflow-hidden shadow-sm">
+    <div class="px-5 py-4 border-b border-[#eee] bg-[#fafafa] flex items-center gap-2.5">
+      <span class="text-base">❓</span>
+      <h2 class="font-bold text-sm text-[#002726]">Perguntas Frequentes — Loja Virtual</h2>
+    </div>
+    <div class="p-4">
+    ${_accordion([
+      { q: 'O Magic Link expirou. O que faço?', a: 'Acesse a tela de login e solicite um novo link. O processo é instantâneo. O link anterior é invalidado automaticamente.' },
+      { q: 'Tentei criar um card mas apareceu erro de CNPJ duplicado. O que fazer?', a: 'O sistema não permite dois cards com o mesmo CNPJ na Loja Virtual. Procure o card existente usando a busca na topbar. Se precisar atualizar os dados, edite o card existente.' },
+      { q: 'A atividade que registrei não aparece na timeline do card. Por quê?', a: 'A atividade é vinculada pelo <strong>nome da empresa</strong>. Verifique se o nome digitado na atividade é idêntico (incluindo maiúsculas/minúsculas) ao nome cadastrado no card do cliente.' },
+      { q: 'Alterei a fase de um card mas ele não se moveu de coluna.', a: 'Verifique se o valor da fase no modal corresponde exatamente a uma das colunas do Kanban. O sistema faz match exato entre o campo e os nomes de coluna configurados.' },
+      { q: 'O botão Octa não aparece no card da Loja Virtual.', a: 'O botão só aparece quando o campo <strong>Conversa Octadesk</strong> (aba Implantação do modal) tem uma URL preenchida. Cole o link da conversa e salve.' },
+      { q: 'A timeline do card mostra dados de IG também. É normal?', a: 'Sim! Se o cliente tiver CNPJ cruzado com o time de Implantação Guiada, as interações deles aparecem na mesma timeline com um badge diferente. Você pode filtrar usando os botões "IG" e "BLV" no painel da timeline.' },
+      { q: 'Posso excluir um card da Loja Virtual?', a: 'Sim, mas apenas usuários com perfil <strong>Admin</strong> veem o botão de exclusão no modal. Agentes só podem editar registros.' },
+      { q: 'Como adiciono um novo usuário ao sistema?', a: 'Fale com o administrador. O acesso é controlado pelo código do sistema — é necessário adicionar o e-mail, nome e time e fazer um novo deploy.' },
+      { q: 'Posso ver os cards do time de Implantação Guiada?', a: 'Não. Agentes da Loja Virtual têm acesso apenas aos dados BLV. A única exceção é a aba "Outro Time" dentro de um card, que mostra dados de Implantação se o CNPJ for o mesmo.' },
     ])}
     </div>
   </div>`;
