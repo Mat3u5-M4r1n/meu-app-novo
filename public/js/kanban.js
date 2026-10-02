@@ -371,12 +371,122 @@ document.getElementById('popover-card-fields')?.addEventListener('click', e => e
 document.getElementById('popover-kanban-views')?.addEventListener('click', e => e.stopPropagation());
 document.getElementById('popover-kanban-columns')?.addEventListener('click', e => e.stopPropagation());
 
-// Renderizar tabela (view lista)
+// ─── Table view — colunas por time ──────────────────────────────────────────
+const _TABLE_COLS_IG = [
+  { key: 'empresa',          label: 'Empresa',       type: 'text',   width: 180 },
+  { key: 'nomeContato',      label: 'Contato',       type: 'text',   width: 150 },
+  { key: 'status',           label: 'Status',        type: 'select', options: () => STATUS_LIST,        width: 180 },
+  { key: 'implantador',      label: 'Implantador',   type: 'select', options: () => IMPLANTADORES_LIST, width: 210 },
+  { key: 'igAgendada',       label: 'IG Agendada',   type: 'select', options: () => TIPOS_IG_LIST,      width: 190 },
+  { key: 'agenda',           label: 'Data/Hora',     type: 'text',   width: 160 },
+  { key: 'plano',            label: 'Plano',         type: 'text',   width: 120 },
+  { key: 'cnpj',             label: 'CNPJ',          type: 'text',   width: 140 },
+  { key: 'whatsapp',         label: 'WhatsApp',      type: 'text',   width: 130 },
+  { key: 'qtdReagendamento', label: 'Reagend.',      type: 'text',   width: 80  },
+  { key: 'responsavel',      label: 'Responsável',   type: 'text',   width: 150 },
+  { key: 'origem',           label: 'Origem',        type: 'text',   width: 120 },
+];
+
+const _TABLE_COLS_BLV = [
+  { key: 'empresa',        label: 'Empresa',       type: 'text',   width: 180 },
+  { key: 'nomeDoContato',  label: 'Contato',       type: 'text',   width: 150 },
+  { key: 'fase',           label: 'Fase',          type: 'select', options: () => BLV_STATUS_LIST,        width: 180 },
+  { key: 'responsavel',    label: 'Responsável',   type: 'select', options: () => BLV_IMPLANTADORES_LIST, width: 200 },
+  { key: 'diaImplantacao', label: 'Dia Implant.',  type: 'text',   width: 140 },
+  { key: 'telefone',       label: 'Telefone',      type: 'text',   width: 130 },
+  { key: 'cnpj',           label: 'CNPJ',          type: 'text',   width: 140 },
+  { key: 'site',           label: 'Site',          type: 'text',   width: 160 },
+  { key: 'origem',         label: 'Origem',        type: 'text',   width: 120 },
+];
+
+function _tableStatusBadge(status) {
+  const col = getActiveKanbanColumns().find(c => c.statuses.includes(status));
+  const cls = col ? col.badgeColor : 'bg-gray-100 text-gray-700 border-gray-200';
+  return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${cls}">${status}</span>`;
+}
+
+function _tableCellDisplay(col, val) {
+  if (col.key === 'status' || col.key === 'fase') {
+    return val ? _tableStatusBadge(val) : `<span class="text-[#ccc] italic text-xs">—</span>`;
+  }
+  return val
+    ? `<span class="block truncate text-[#333] text-xs">${val}</span>`
+    : `<span class="text-[#ccc] italic text-xs">—</span>`;
+}
+
+async function _tableStartEdit(td, clienteId, key) {
+  if (td.dataset.editing === '1') return;
+
+  const cols = currentTeam === 'blv' ? _TABLE_COLS_BLV : _TABLE_COLS_IG;
+  const colSpec = cols.find(c => c.key === key);
+  if (!colSpec) return;
+
+  const cliente = getActiveClientes().find(c => c.id === clienteId);
+  if (!cliente) return;
+
+  const currentVal = cliente[key] !== undefined && cliente[key] !== null ? String(cliente[key]) : '';
+  const originalHTML = td.innerHTML;
+  td.dataset.editing = '1';
+
+  let editorEl;
+  if (colSpec.type === 'select') {
+    editorEl = document.createElement('select');
+    editorEl.innerHTML = `<option value="">—</option>` +
+      colSpec.options().map(o =>
+        `<option value="${o}"${o === currentVal ? ' selected' : ''}>${o}</option>`
+      ).join('');
+  } else {
+    editorEl = document.createElement('input');
+    editorEl.type = 'text';
+    editorEl.value = currentVal;
+  }
+  editorEl.className = 'w-full min-w-[110px] text-xs px-2 py-1 rounded-lg border-2 border-[#7F76FF] outline-none bg-white shadow-sm';
+
+  td.innerHTML = '';
+  td.appendChild(editorEl);
+  editorEl.focus();
+  if (editorEl.tagName === 'INPUT') editorEl.select();
+
+  let done = false;
+
+  async function commit() {
+    if (done) return;
+    done = true;
+    delete td.dataset.editing;
+    const newVal = editorEl.value;
+
+    if (newVal === currentVal) { td.innerHTML = originalHTML; return; }
+
+    td.innerHTML = _tableCellDisplay(colSpec, newVal);
+    try {
+      await apiSalvarCliente({ ...cliente, [key]: newVal });
+    } catch (e) {
+      td.innerHTML = originalHTML;
+      showToast(`Erro ao salvar: ${e.message}`, 'error');
+    }
+  }
+
+  function cancel() {
+    if (done) return;
+    done = true;
+    delete td.dataset.editing;
+    td.innerHTML = originalHTML;
+  }
+
+  editorEl.addEventListener('blur', commit);
+  editorEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); editorEl.blur(); }
+    if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+  });
+}
+
+// Renderizar tabela (view lista) — edição inline estilo Notion
 function renderTableView() {
   const isBlv = currentTeam === 'blv';
   const implKey = isBlv ? 'responsavel' : 'implantador';
   const nameKey = isBlv ? 'nomeDoContato' : 'nomeContato';
-  const statusKey = getActiveStatusKey();
+  const cols    = isBlv ? _TABLE_COLS_BLV : _TABLE_COLS_IG;
+
   const dataset = getActiveClientes().filter(c => {
     if (currentSearchTerm && !(
       (c.empresa || '').toLowerCase().includes(currentSearchTerm) ||
@@ -386,16 +496,48 @@ function renderTableView() {
     if (selectedImplantador !== 'todos' && c[implKey] !== selectedImplantador) return false;
     return true;
   });
+
   const countEl = document.getElementById('lbl-table-count');
   if (countEl) countEl.textContent = `${dataset.length} registros`;
-  const cols = isBlv
-    ? ['id', 'empresa', 'nomeDoContato', 'fase', 'responsavel', 'diaImplantacao', 'telefone', 'cnpj']
-    : ['id', 'empresa', 'nomeContato', 'status', 'igAgendada', 'implantador', 'agenda', 'whatsapp', 'plano'];
-  const head = document.getElementById('table-head');
-  const body = document.getElementById('table-body');
-  if (!head || !body) return;
-  head.innerHTML = `<tr>${cols.map(k => `<th class="px-3 py-2 whitespace-nowrap">${k}</th>`).join('')}</tr>`;
-  body.innerHTML = dataset.map(c => `<tr onclick="abrirModalCliente(${c.id})">${cols.map(k => `<td class="px-3 py-2 whitespace-nowrap ${k === statusKey ? 'font-bold text-[#002726]' : 'text-[#555]'}">${c[k] !== undefined && c[k] !== null ? String(c[k]).substring(0, 60) : '—'}</td>`).join('')}</tr>`).join('');
+
+  const head  = document.getElementById('table-head');
+  const body  = document.getElementById('table-body');
+  const table = document.getElementById('table-clientes');
+  if (!head || !body || !table) return;
+
+  table.style.minWidth = 'max-content';
+
+  // Cabeçalho
+  head.innerHTML = `<tr>
+    <th class="px-3 py-2 w-10 sticky left-0 z-30 bg-[#fafafa] border-r border-[#eee]"></th>
+    ${cols.map(col =>
+      `<th class="px-3 py-2 text-left whitespace-nowrap font-bold text-[11px] uppercase text-[#666]" style="min-width:${col.width}px">${col.label}</th>`
+    ).join('')}
+  </tr>`;
+
+  // Linhas
+  body.innerHTML = dataset.map(c => {
+    const cells = cols.map(col => {
+      const raw = c[col.key];
+      const val = raw !== undefined && raw !== null ? String(raw) : '';
+      return `<td
+        class="px-3 py-2 cursor-pointer hover:bg-[#eef4ff] transition-colors"
+        onclick="_tableStartEdit(this, ${c.id}, '${col.key}')"
+        title="Clique para editar"
+      >${_tableCellDisplay(col, val)}</td>`;
+    }).join('');
+
+    return `<tr class="hover:bg-[#f8fafc] transition-colors group" data-id="${c.id}">
+      <td class="px-2 py-2 sticky left-0 z-10 bg-white border-r border-[#eee] group-hover:bg-[#f8fafc] transition-colors text-center">
+        <button
+          onclick="event.stopPropagation(); abrirModalCliente(${c.id})"
+          title="Abrir card completo"
+          class="w-7 h-7 rounded-lg flex items-center justify-center mx-auto text-[#aaa] hover:text-[#002726] hover:bg-[#d6f5c7] transition-all cursor-pointer"
+        ><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></button>
+      </td>
+      ${cells}
+    </tr>`;
+  }).join('');
 }
 
 function abrirModalNovoCliente() {
