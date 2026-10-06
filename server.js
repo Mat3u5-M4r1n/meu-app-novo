@@ -26,6 +26,7 @@ const supabase = createClient(
 const USERS = {
   'mateus.marin@bling.com.br':    { name: 'Mateus Marin',    initials: 'MM', role: 'admin', teams: ['ig', 'blv'] },
   'manuela.curti@bling.com.br':   { name: 'Manuela Curti',   initials: 'MC', role: 'admin', teams: ['ig', 'blv'] },
+  'thalles.paz@bling.com.br':     { name: 'Thalles Paz',     initials: 'TP', role: 'admin', teams: ['ig', 'blv'] },
   'luan.cavalheiro@bling.com.br': { name: 'Luan Cavalheiro', initials: 'LC', role: 'agent', teams: ['blv'] },
   'ana.caio@bling.com.br':        { name: 'Ana Caio',        initials: 'AC', role: 'agent', teams: ['blv'] }
 };
@@ -152,6 +153,17 @@ function dbFor(accessToken) {
 // ── AUTH MIDDLEWARE ───────────────────────────────────────────────────────────
 async function requireAuth(req, res, next) {
   try {
+    // Dev bypass: X-Dev-Email header (acesso direto sem Supabase Auth)
+    const devEmail = (req.headers['x-dev-email'] || '').toLowerCase().trim();
+    if (devEmail) {
+      const rbac = USERS[devEmail];
+      if (!rbac) return res.status(403).json({ error: 'E-mail não autorizado' });
+      req.user = { email: devEmail, ...rbac };
+      req.db = supabase; // usa cliente anon key (sem JWT de usuário)
+      return next();
+    }
+
+    // Fluxo normal: Supabase JWT
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) {
       return res.status(401).json({ error: 'Não autenticado' });
@@ -171,6 +183,15 @@ async function requireAuth(req, res, next) {
 }
 
 // ── AUTH ROUTES ───────────────────────────────────────────────────────────────
+
+// Login direto (dev bypass) — sem Supabase Auth
+app.post('/api/auth/dev-login', (req, res) => {
+  const email = ((req.body && req.body.email) || '').toLowerCase().trim();
+  const user = USERS[email];
+  if (!user) return res.status(403).json({ error: 'E-mail não autorizado neste sistema.' });
+  res.json({ email, ...user });
+});
+
 app.get('/api/auth/me', requireAuth, (req, res) => res.json(req.user));
 app.post('/api/auth/logout', (req, res) => res.json({ ok: true }));
 

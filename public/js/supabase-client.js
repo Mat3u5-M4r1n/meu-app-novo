@@ -25,13 +25,21 @@ async function initSupabase() {
 function getSupabaseClient() { return _sb; }
 function getAccessToken() { return _session?.access_token ?? null; }
 
-// Wrapper for all API calls — automatically injects Authorization header
+function getDevSession() {
+  try { return JSON.parse(localStorage.getItem('blingDevSession') || 'null'); } catch { return null; }
+}
+
+// Wrapper for all API calls — injeta Authorization (JWT) ou X-Dev-Email (dev bypass)
 async function apiFetch(url, options = {}) {
+  const dev = getDevSession();
   const token = getAccessToken();
+  const authHeaders = dev
+    ? { 'X-Dev-Email': dev.email }
+    : token ? { Authorization: `Bearer ${token}` } : {};
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {}),
-    ...(token ? { Authorization: `Bearer ${token}` } : {})
+    ...authHeaders
   };
   return fetch(url, { ...options, headers });
 }
