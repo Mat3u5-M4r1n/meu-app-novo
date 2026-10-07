@@ -126,6 +126,37 @@
       </div>
     </div>
 
+    <!-- ─── STEP: NOVA SENHA (recovery link) ──────────────────────────── -->
+    <div id="step-nova-senha" class="step card rounded-2xl p-6">
+      <h2 class="text-base font-bold text-white mb-1">Criar nova senha</h2>
+      <p class="text-xs text-white/50 mb-5">Escolha uma senha forte para a sua conta.</p>
+      <form onsubmit="acaoNovaSenha(event)">
+        <div class="mb-3">
+          <label class="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wide">Nova Senha</label>
+          <div class="relative">
+            <input id="nova-senha" type="password" placeholder="••••••••" required autocomplete="new-password"
+              oninput="validarSenhaUI(this.value)"
+              class="input-field w-full rounded-xl px-4 py-3 text-sm pr-10" />
+            <button type="button" onclick="toggleSenha('nova-senha', this)"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors cursor-pointer text-xs">👁</button>
+          </div>
+          <div class="mt-2.5 space-y-1 text-[11px] px-1">
+            <p id="rule-min"   class="rule-bad flex items-center gap-1.5"><span>○</span> Mínimo 8 caracteres</p>
+            <p id="rule-upper" class="rule-bad flex items-center gap-1.5"><span>○</span> Uma letra maiúscula (A–Z)</p>
+            <p id="rule-num"   class="rule-bad flex items-center gap-1.5"><span>○</span> Um número (0–9)</p>
+            <p id="rule-spec"  class="rule-bad flex items-center gap-1.5"><span>○</span> Um caractere especial (!@#$%…)</p>
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wide">Confirmar Nova Senha</label>
+          <input id="nova-senha-confirma" type="password" placeholder="Repita a senha" required autocomplete="new-password"
+            class="input-field w-full rounded-xl px-4 py-3 text-sm" />
+        </div>
+        <div id="nova-senha-msg" class="hidden text-xs text-rose-400 mb-3 p-2.5 bg-rose-400/10 rounded-xl leading-relaxed"></div>
+        <button type="submit" id="btn-nova-senha" class="btn-primary w-full py-3 rounded-xl text-sm cursor-pointer">Salvar Nova Senha</button>
+      </form>
+    </div>
+
     <!-- ─── STEP: SUCESSO CADASTRO ──────────────────────────────────────── -->
     <div id="step-sucesso" class="step card rounded-2xl p-6 text-center">
       <div class="w-14 h-14 rounded-full bg-[#93F574]/15 flex items-center justify-center mx-auto mb-4">
@@ -151,11 +182,13 @@
       _sb = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey, {
         auth: { storage: window.sessionStorage, autoRefreshToken: true, persistSession: true, detectSessionInUrl: true }
       });
-      // Detectar retorno de link de recuperação de senha (#recovery no hash)
-      if (window.location.hash.includes('type=recovery') || window.location.hash.includes('#recovery')) {
-        irPara('step-forgot');
-        document.getElementById('lbl-subtitle').textContent = 'Redefinição de senha';
-      }
+      // Detectar sessão de recuperação de senha via evento do SDK
+      _sb.auth.onAuthStateChange((event, _session) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          irPara('step-nova-senha');
+          document.getElementById('lbl-subtitle').textContent = 'Redefinição de senha';
+        }
+      });
       return _sb;
     }
 
@@ -307,6 +340,40 @@
         mostrarErro('forgot-msg', err.message);
       } finally {
         btn.textContent = 'Enviar Link de Recuperação'; btn.disabled = false;
+      }
+    }
+
+    // ── AÇÃO: Nova Senha (recovery) ────────────────────────────────────────────
+    async function acaoNovaSenha(event) {
+      event.preventDefault();
+      const novaSenha  = document.getElementById('nova-senha').value;
+      const confirma   = document.getElementById('nova-senha-confirma').value;
+      const btn        = document.getElementById('btn-nova-senha');
+      ocultarMsg('nova-senha-msg');
+
+      if (!senhaValida(novaSenha)) {
+        return mostrarErro('nova-senha-msg', 'A senha não atende a todos os requisitos de segurança.');
+      }
+      if (novaSenha !== confirma) {
+        return mostrarErro('nova-senha-msg', 'As senhas não coincidem.');
+      }
+
+      btn.textContent = 'Salvando…'; btn.disabled = true;
+
+      try {
+        const sb = await initSb();
+        const { error } = await sb.auth.updateUser({ password: novaSenha });
+        if (error) throw new Error(error.message);
+
+        document.getElementById('sucesso-titulo').textContent = 'Senha atualizada!';
+        document.getElementById('sucesso-msg').textContent = 'Sua nova senha foi salva com sucesso. Faça o login para continuar.';
+        await sb.auth.signOut();
+        irPara('step-sucesso');
+
+      } catch (err) {
+        mostrarErro('nova-senha-msg', err.message || 'Erro ao salvar a nova senha. Tente solicitar um novo link.');
+      } finally {
+        btn.textContent = 'Salvar Nova Senha'; btn.disabled = false;
       }
     }
 
