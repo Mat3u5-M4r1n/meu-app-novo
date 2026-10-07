@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bling LINK – Acesso</title>
   <link rel="icon" href="/logo-bling.svg" type="image/svg+xml" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { background: #002726; }
@@ -16,127 +17,311 @@
       transition: border-color 0.2s;
     }
     .input-field:focus { border-color: #93F574; }
-    .input-field::placeholder { color: rgba(255,255,255,0.4); }
-    .btn-primary {
-      background: #93F574; color: #002726; font-weight: 700;
-      transition: background 0.2s, transform 0.1s;
-    }
+    .input-field::placeholder { color: rgba(255,255,255,0.35); }
+    .btn-primary { background: #93F574; color: #002726; font-weight: 700; transition: background 0.15s, transform 0.1s; }
     .btn-primary:hover { background: #82e265; }
     .btn-primary:active { transform: scale(0.98); }
-    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-ghost { color: rgba(255,255,255,0.5); transition: color 0.15s; }
+    .btn-ghost:hover { color: rgba(255,255,255,0.85); }
+    .rule-ok  { color: #93F574; }
+    .rule-bad { color: rgba(255,255,255,0.3); }
+    .step { display: none; }
+    .step.active { display: block; }
   </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
-
   <div class="w-full max-w-sm">
+
     <!-- Logo -->
     <div class="flex flex-col items-center mb-8">
       <img src="/logo-bling.svg" alt="Bling" class="w-16 h-16 rounded-2xl shadow-xl mb-4" />
       <h1 class="text-2xl font-bold text-white tracking-tight">Bling LINK</h1>
-      <p class="text-sm text-white/50 mt-1">Operacional de Implantação</p>
+      <p id="lbl-subtitle" class="text-sm text-white/50 mt-1">Operacional de Implantação</p>
     </div>
 
-    <!-- STEP 1: Email -->
-    <div id="step-email" class="card rounded-2xl p-6">
-      <h2 class="text-base font-bold text-white mb-1">Entrar com e-mail</h2>
-      <p class="text-xs text-white/50 mb-5">Acesse com seu e-mail corporativo @bling.com.br.</p>
-      <form id="form-email" onsubmit="entrarDireto(event)">
-        <div class="mb-4">
-          <label class="block text-xs font-semibold text-white/70 mb-1.5 uppercase tracking-wide">E-mail</label>
-          <input id="inp-email" type="email" placeholder="seu.nome@bling.com.br" required autocomplete="email"
+    <!-- ─── STEP: LOGIN ─────────────────────────────────────────────────── -->
+    <div id="step-login" class="step active card rounded-2xl p-6">
+      <h2 class="text-base font-bold text-white mb-1">Entrar</h2>
+      <p class="text-xs text-white/50 mb-5">Acesse com seu e-mail e senha corporativos.</p>
+      <form onsubmit="acaoLogin(event)">
+        <div class="mb-3">
+          <label class="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wide">E-mail</label>
+          <input id="login-email" type="email" placeholder="seu.nome@bling.com.br" required autocomplete="email"
             class="input-field w-full rounded-xl px-4 py-3 text-sm" />
         </div>
-        <div id="msg-email" class="hidden text-xs text-rose-400 mb-3 p-2 bg-rose-400/10 rounded-lg"></div>
-        <button type="submit" id="btn-enviar" class="btn-primary w-full py-3 rounded-xl text-sm cursor-pointer">
-          Entrar
-        </button>
+        <div class="mb-4">
+          <label class="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wide">Senha</label>
+          <div class="relative">
+            <input id="login-senha" type="password" placeholder="••••••••" required autocomplete="current-password"
+              class="input-field w-full rounded-xl px-4 py-3 text-sm pr-10" />
+            <button type="button" onclick="toggleSenha('login-senha', this)"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors cursor-pointer text-xs">👁</button>
+          </div>
+        </div>
+        <div id="login-msg" class="hidden text-xs text-rose-400 mb-3 p-2.5 bg-rose-400/10 rounded-xl leading-relaxed"></div>
+        <button type="submit" id="btn-login" class="btn-primary w-full py-3 rounded-xl text-sm cursor-pointer">Entrar</button>
       </form>
-    </div>
-
-    <!-- STEP 2: Aguardando clique no link -->
-    <div id="step-sent" class="card rounded-2xl p-6 hidden">
-      <div class="flex flex-col items-center text-center gap-3">
-        <div class="w-14 h-14 rounded-full bg-[#93F574]/15 flex items-center justify-center mb-1">
-          <svg class="w-7 h-7 text-[#93F574]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-          </svg>
-        </div>
-        <h2 class="text-base font-bold text-white">Link enviado!</h2>
-        <p class="text-xs text-white/60 leading-relaxed">
-          Enviamos um link de acesso para<br/>
-          <strong class="text-white/90" id="lbl-email-destino"></strong>
-        </p>
-        <p class="text-xs text-white/40 leading-relaxed px-2">
-          Verifique sua caixa de entrada e clique no link para entrar.
-          Esta aba reconhecerá a sessão automaticamente.
-        </p>
-
-        <!-- Spinner de espera -->
-        <div class="flex items-center gap-2 mt-1">
-          <svg class="animate-spin w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-          </svg>
-          <span class="text-[11px] text-white/30">Aguardando confirmação…</span>
-        </div>
-
-        <div class="w-full pt-3 border-t border-white/10 flex items-center justify-between">
-          <button type="button" onclick="voltarEmail()"
-            class="text-xs text-white/40 hover:text-white/70 transition-colors cursor-pointer">
-            ← Outro e-mail
-          </button>
-          <button type="button" id="btn-reenviar" onclick="reenviarLink()" disabled
-            class="text-xs text-white/40 hover:text-white/70 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
-            Reenviar (<span id="reenviar-countdown">60</span>s)
-          </button>
-        </div>
+      <div class="flex items-center justify-between mt-4 pt-3 border-t border-white/10">
+        <button type="button" onclick="irPara('step-cadastro')" class="btn-ghost text-xs cursor-pointer">Criar conta</button>
+        <button type="button" onclick="irPara('step-forgot')" class="btn-ghost text-xs cursor-pointer">Esqueci minha senha</button>
       </div>
     </div>
 
-    <p class="text-center text-[11px] text-white/30 mt-6">Apenas e-mails @bling.com.br autorizados</p>
+    <!-- ─── STEP: CADASTRO ──────────────────────────────────────────────── -->
+    <div id="step-cadastro" class="step card rounded-2xl p-6">
+      <h2 class="text-base font-bold text-white mb-1">Criar conta</h2>
+      <p class="text-xs text-white/50 mb-5">Apenas e-mails <strong class="text-white/70">@bling.com.br</strong> pré-autorizados podem se cadastrar.</p>
+      <form onsubmit="acaoCadastro(event)">
+        <div class="mb-3">
+          <label class="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wide">E-mail</label>
+          <input id="cad-email" type="email" placeholder="seu.nome@bling.com.br" required autocomplete="email"
+            class="input-field w-full rounded-xl px-4 py-3 text-sm" />
+        </div>
+        <div class="mb-3">
+          <label class="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wide">Senha</label>
+          <div class="relative">
+            <input id="cad-senha" type="password" placeholder="Crie uma senha forte" required autocomplete="new-password"
+              oninput="validarSenhaUI(this.value)"
+              class="input-field w-full rounded-xl px-4 py-3 text-sm pr-10" />
+            <button type="button" onclick="toggleSenha('cad-senha', this)"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors cursor-pointer text-xs">👁</button>
+          </div>
+          <!-- Regras da senha -->
+          <div class="mt-2.5 space-y-1 text-[11px] px-1">
+            <p id="rule-min"   class="rule-bad flex items-center gap-1.5"><span>○</span> Mínimo 8 caracteres</p>
+            <p id="rule-upper" class="rule-bad flex items-center gap-1.5"><span>○</span> Uma letra maiúscula (A–Z)</p>
+            <p id="rule-num"   class="rule-bad flex items-center gap-1.5"><span>○</span> Um número (0–9)</p>
+            <p id="rule-spec"  class="rule-bad flex items-center gap-1.5"><span>○</span> Um caractere especial (!@#$%…)</p>
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wide">Confirmar Senha</label>
+          <input id="cad-confirma" type="password" placeholder="Repita a senha" required autocomplete="new-password"
+            class="input-field w-full rounded-xl px-4 py-3 text-sm" />
+        </div>
+        <div id="cad-msg" class="hidden text-xs text-rose-400 mb-3 p-2.5 bg-rose-400/10 rounded-xl leading-relaxed"></div>
+        <button type="submit" id="btn-cad" class="btn-primary w-full py-3 rounded-xl text-sm cursor-pointer">Criar Conta</button>
+      </form>
+      <div class="mt-4 pt-3 border-t border-white/10 text-center">
+        <button type="button" onclick="irPara('step-login')" class="btn-ghost text-xs cursor-pointer">← Voltar para o login</button>
+      </div>
+    </div>
+
+    <!-- ─── STEP: ESQUECI SENHA ─────────────────────────────────────────── -->
+    <div id="step-forgot" class="step card rounded-2xl p-6">
+      <h2 class="text-base font-bold text-white mb-1">Recuperar senha</h2>
+      <p class="text-xs text-white/50 mb-5">Informe seu e-mail e enviaremos um link para redefinir a senha.</p>
+      <form onsubmit="acaoForgot(event)">
+        <div class="mb-4">
+          <label class="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wide">E-mail</label>
+          <input id="forgot-email" type="email" placeholder="seu.nome@bling.com.br" required autocomplete="email"
+            class="input-field w-full rounded-xl px-4 py-3 text-sm" />
+        </div>
+        <div id="forgot-msg" class="hidden text-xs mb-3 p-2.5 rounded-xl leading-relaxed"></div>
+        <button type="submit" id="btn-forgot" class="btn-primary w-full py-3 rounded-xl text-sm cursor-pointer">Enviar Link de Recuperação</button>
+      </form>
+      <div class="mt-4 pt-3 border-t border-white/10 text-center">
+        <button type="button" onclick="irPara('step-login')" class="btn-ghost text-xs cursor-pointer">← Voltar para o login</button>
+      </div>
+    </div>
+
+    <!-- ─── STEP: SUCESSO CADASTRO ──────────────────────────────────────── -->
+    <div id="step-sucesso" class="step card rounded-2xl p-6 text-center">
+      <div class="w-14 h-14 rounded-full bg-[#93F574]/15 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-7 h-7 text-[#93F574]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+      <h2 id="sucesso-titulo" class="text-base font-bold text-white mb-2"></h2>
+      <p id="sucesso-msg" class="text-xs text-white/60 leading-relaxed mb-5"></p>
+      <button type="button" onclick="irPara('step-login')" class="btn-primary w-full py-3 rounded-xl text-sm cursor-pointer">Ir para o Login</button>
+    </div>
+
+    <p class="text-center text-[11px] text-white/25 mt-6">Acesso restrito — apenas e-mails @bling.com.br autorizados</p>
   </div>
 
   <script>
-    // Verifica se já existe sessão dev ativa
-    (function checkExistingSession() {
-      try {
-        const dev = JSON.parse(localStorage.getItem('blingDevSession') || 'null');
-        if (dev && dev.email) {
-          fetch('/api/auth/me', { headers: { 'X-Dev-Email': dev.email } })
-            .then(r => { if (r.ok) window.location.href = '/'; })
-            .catch(() => {});
-        }
-      } catch {}
-    })();
+    let _sb = null;
 
-    async function entrarDireto(event) {
+    // ── Supabase client ────────────────────────────────────────────────────────
+    async function initSb() {
+      if (_sb) return _sb;
+      const config = await fetch('/api/config').then(r => r.json());
+      _sb = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey, {
+        auth: { storage: window.sessionStorage, autoRefreshToken: true, persistSession: true, detectSessionInUrl: true }
+      });
+      // Detectar retorno de link de recuperação de senha (#recovery no hash)
+      if (window.location.hash.includes('type=recovery') || window.location.hash.includes('#recovery')) {
+        irPara('step-forgot');
+        document.getElementById('lbl-subtitle').textContent = 'Redefinição de senha';
+      }
+      return _sb;
+    }
+
+    // ── Navegação entre steps ──────────────────────────────────────────────────
+    function irPara(stepId) {
+      document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+      document.getElementById(stepId)?.classList.add('active');
+    }
+
+    function toggleSenha(inputId, btn) {
+      const inp = document.getElementById(inputId);
+      if (!inp) return;
+      const mostrar = inp.type === 'password';
+      inp.type = mostrar ? 'text' : 'password';
+      btn.textContent = mostrar ? '🙈' : '👁';
+    }
+
+    // ── Validação de senha (regras visuais) ───────────────────────────────────
+    function validarSenhaUI(val) {
+      const set = (id, ok) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.className = ok ? 'rule-ok flex items-center gap-1.5' : 'rule-bad flex items-center gap-1.5';
+        el.querySelector('span').textContent = ok ? '✓' : '○';
+      };
+      set('rule-min',   val.length >= 8);
+      set('rule-upper', /[A-Z]/.test(val));
+      set('rule-num',   /[0-9]/.test(val));
+      set('rule-spec',  /[^A-Za-z0-9]/.test(val));
+    }
+
+    function senhaValida(val) {
+      return val.length >= 8 && /[A-Z]/.test(val) && /[0-9]/.test(val) && /[^A-Za-z0-9]/.test(val);
+    }
+
+    function mostrarErro(elementId, msg) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      el.className = 'text-xs text-rose-400 mb-3 p-2.5 bg-rose-400/10 rounded-xl leading-relaxed';
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    function mostrarSucesso(elementId, msg) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      el.className = 'text-xs text-emerald-400 mb-3 p-2.5 bg-emerald-400/10 rounded-xl leading-relaxed';
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    function ocultarMsg(elementId) {
+      document.getElementById(elementId)?.classList.add('hidden');
+    }
+
+    // ── AÇÃO: Login ────────────────────────────────────────────────────────────
+    async function acaoLogin(event) {
       event.preventDefault();
-      const email = document.getElementById('inp-email').value.trim().toLowerCase();
-      const btn   = document.getElementById('btn-enviar');
-      const msg   = document.getElementById('msg-email');
-      msg.classList.add('hidden');
+      const email    = document.getElementById('login-email').value.trim().toLowerCase();
+      const password = document.getElementById('login-senha').value;
+      const btn      = document.getElementById('btn-login');
+      ocultarMsg('login-msg');
       btn.textContent = 'Entrando…'; btn.disabled = true;
 
       try {
-        const res = await fetch('/api/auth/dev-login', {
+        const res  = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao fazer login.');
+
+        // Estabelece sessão no cliente Supabase (para que apiFetch use o Bearer token)
+        const sb = await initSb();
+        await sb.auth.setSession({
+          access_token:  data.session.access_token,
+          refresh_token: data.session.refresh_token
+        });
+        window.location.href = '/';
+
+      } catch (err) {
+        mostrarErro('login-msg', err.message);
+      } finally {
+        btn.textContent = 'Entrar'; btn.disabled = false;
+      }
+    }
+
+    // ── AÇÃO: Cadastro ─────────────────────────────────────────────────────────
+    async function acaoCadastro(event) {
+      event.preventDefault();
+      const email    = document.getElementById('cad-email').value.trim().toLowerCase();
+      const senha    = document.getElementById('cad-senha').value;
+      const confirma = document.getElementById('cad-confirma').value;
+      const btn      = document.getElementById('btn-cad');
+      ocultarMsg('cad-msg');
+
+      if (!senhaValida(senha)) {
+        return mostrarErro('cad-msg', 'A senha não atende a todos os requisitos de segurança.');
+      }
+      if (senha !== confirma) {
+        return mostrarErro('cad-msg', 'As senhas não coincidem.');
+      }
+
+      btn.textContent = 'Criando conta…'; btn.disabled = true;
+
+      try {
+        const res  = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password: senha })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao criar conta.');
+
+        document.getElementById('sucesso-titulo').textContent = 'Conta criada!';
+        document.getElementById('sucesso-msg').textContent = data.message || 'Sua conta foi criada com sucesso. Faça o login para continuar.';
+        irPara('step-sucesso');
+
+      } catch (err) {
+        mostrarErro('cad-msg', err.message);
+      } finally {
+        btn.textContent = 'Criar Conta'; btn.disabled = false;
+      }
+    }
+
+    // ── AÇÃO: Esqueci a Senha ──────────────────────────────────────────────────
+    async function acaoForgot(event) {
+      event.preventDefault();
+      const email = document.getElementById('forgot-email').value.trim().toLowerCase();
+      const btn   = document.getElementById('btn-forgot');
+      ocultarMsg('forgot-msg');
+      btn.textContent = 'Enviando…'; btn.disabled = true;
+
+      try {
+        const res  = await fetch('/api/auth/forgot-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email })
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'E-mail não autorizado.');
+        if (!res.ok) throw new Error(data.error || 'Erro ao enviar e-mail.');
 
-        localStorage.setItem('blingDevSession', JSON.stringify(data));
-        window.location.href = '/';
+        document.getElementById('sucesso-titulo').textContent = 'E-mail enviado!';
+        document.getElementById('sucesso-msg').textContent = `Enviamos um link de redefinição para ${email}. Verifique sua caixa de entrada (e spam).`;
+        irPara('step-sucesso');
 
       } catch (err) {
-        msg.textContent = err.message;
-        msg.classList.remove('hidden');
+        mostrarErro('forgot-msg', err.message);
       } finally {
-        btn.textContent = 'Entrar'; btn.disabled = false;
+        btn.textContent = 'Enviar Link de Recuperação'; btn.disabled = false;
       }
     }
+
+    // Verificar sessão existente ao carregar
+    initSb().then(async sb => {
+      // Limpar qualquer sessão dev residual
+      try { localStorage.removeItem('blingDevSession'); } catch {}
+
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        const me = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${session.access_token}` } });
+        if (me.ok) { window.location.href = '/'; }
+        else { await sb.auth.signOut(); }
+      }
+    }).catch(console.error);
   </script>
 </body>
 </html>

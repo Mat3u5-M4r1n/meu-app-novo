@@ -4,6 +4,48 @@ function renderSettingsView() {
   const dataset = getActiveClientes();
   const exportBtn = document.getElementById('btn-export-label');
   if (exportBtn) exportBtn.textContent = `Exportar Todos (${dataset.length} registros)`;
+  if (currentUser?.role === 'admin') carregarUsuariosBloqueados();
+}
+
+// ── Painel de usuários bloqueados (admin only) ────────────────────────────────
+async function carregarUsuariosBloqueados() {
+  const container = document.getElementById('blocked-users-panel');
+  if (!container) return;
+  try {
+    const res = await apiFetch('/api/auth/blocked-users');
+    if (!res.ok) { container.classList.add('hidden'); return; }
+    const lista = await res.json();
+    if (!lista.length) { container.classList.add('hidden'); return; }
+    container.classList.remove('hidden');
+    document.getElementById('blocked-users-list').innerHTML = lista.map(u => `
+      <div class="flex items-center justify-between gap-3 py-2.5 px-3 rounded-xl bg-rose-50 border border-rose-100">
+        <div class="min-w-0">
+          <p class="text-xs font-bold text-rose-800 truncate">${u.email}</p>
+          <p class="text-[11px] text-rose-500 mt-0.5">Bloqueado em ${u.bloqueado_em ? new Date(u.bloqueado_em).toLocaleString('pt-BR') : '—'}</p>
+        </div>
+        <button onclick="desbloquearUsuario('${u.email}', this)"
+          class="shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-lg bg-rose-600 text-white hover:bg-rose-700 transition-colors cursor-pointer">
+          Liberar Acesso
+        </button>
+      </div>`).join('');
+  } catch {
+    container.classList.add('hidden');
+  }
+}
+
+async function desbloquearUsuario(email, btn) {
+  btn.disabled = true; btn.textContent = 'Aguarde…';
+  try {
+    const res = await apiFetch('/api/auth/unblock', {
+      method: 'POST', body: JSON.stringify({ email })
+    });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+    showToast(`✅ Acesso liberado para ${email}`, 'success');
+    await carregarUsuariosBloqueados();
+  } catch (e) {
+    showToast(`Erro: ${e.message}`, 'error');
+    btn.disabled = false; btn.textContent = 'Liberar Acesso';
+  }
 }
 
 // --- CSV Export ---

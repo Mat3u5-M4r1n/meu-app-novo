@@ -287,6 +287,15 @@
         <div id="settings-view-container" class="p-6 bg-[#F4F4F4] flex-1 overflow-y-auto">
           <div class="max-w-4xl mx-auto space-y-5">
             <div><h2 class="text-base font-bold text-[#002726] tracking-tight">Ajustes, Importação & Exportação de Dados</h2><p class="text-xs text-[#666]">Importe planilhas de referência no formato da Implantação Guiada ou exporte os dados atuais</p></div>
+
+            <!-- Painel de usuários bloqueados (visível apenas para admins quando há bloqueios) -->
+            <div id="blocked-users-panel" class="hidden bg-white rounded-2xl border border-rose-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-rose-100 bg-rose-50 flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                <h3 class="font-bold text-sm text-rose-700">Contas Bloqueadas por Tentativas Inválidas</h3>
+              </div>
+              <div id="blocked-users-list" class="p-4 space-y-2"></div>
+            </div>
             <div class="bg-white rounded-2xl border border-[#eee] p-5 shadow-[0_4px_16px_rgba(0,0,0,0.02)] space-y-4">
               <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#93F574] to-[#7F76FF] text-[#002726] flex items-center justify-center font-bold"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div><div><h3 class="font-bold text-sm text-[#002726]">Importação / Exportação de Planilha</h3><p class="text-xs text-[#666]">Compatível com todos os campos oficiais da planilha de Implantação Guiada</p></div></div>
               <div class="flex flex-wrap items-center gap-2.5 pt-2">

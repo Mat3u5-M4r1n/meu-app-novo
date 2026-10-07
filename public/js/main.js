@@ -6,18 +6,6 @@ let mainThemeDark = false;
 
 async function checkAuth() {
   try {
-    // Dev bypass: sessão local (sem Supabase Auth)
-    const dev = getDevSession();
-    if (dev) {
-      const res = await apiFetch('/api/auth/me');
-      if (res.ok) return await res.json();
-      // Sessão inválida ou expirada — limpa e redireciona
-      localStorage.removeItem('blingDevSession');
-      window.location.href = '/login.html';
-      return null;
-    }
-
-    // Fluxo normal: Supabase Auth JWT
     const sb = await initSupabase();
     const { data: { session } } = await sb.auth.getSession();
     if (!session) { window.location.href = '/login.html'; return null; }
@@ -36,7 +24,6 @@ async function checkAuth() {
 }
 
 async function handleLogout() {
-  localStorage.removeItem('blingDevSession');
   const sb = getSupabaseClient();
   if (sb) await sb.auth.signOut();
   window.location.href = '/login.html';

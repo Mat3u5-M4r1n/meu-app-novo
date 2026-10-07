@@ -16,11 +16,18 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Auth-validation client (anon key, used only for getUser() JWT validation)
+// Auth-validation client (anon key — used for getUser() JWT validation and auth operations)
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_ANON_KEY
 );
+
+// Admin client (service_role — bypasses RLS for brute-force tracking & user management)
+const adminDb = process.env.SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false }
+    })
+  : null;
 
 // ── RBAC ──────────────────────────────────────────────────────────────────────
 const USERS = {
@@ -153,21 +160,8 @@ function dbFor(accessToken) {
 // ── AUTH MIDDLEWARE ───────────────────────────────────────────────────────────
 async function requireAuth(req, res, next) {
   try {
-    // Dev bypass: X-Dev-Email header (acesso direto sem Supabase Auth)
-    const devEmail = (req.headers['x-dev-email'] || '').toLowerCase().trim();
-    if (devEmail) {
-      const rbac = USERS[devEmail];
-      if (!rbac) return res.status(403).json({ error: 'E-mail não autorizado' });
-      req.user = { email: devEmail, ...rbac };
-      req.db = supabase; // usa cliente anon key (sem JWT de usuário)
-      return next();
-    }
-
-    // Fluxo normal: Supabase JWT
     const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Não autenticado' });
-    }
+    if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'Não autenticado' });
     const token = authHeader.slice(7);
     const { data: { user }, error } = await supabase.auth.getUser(token);
     if (error || !user) return res.status(401).json({ error: 'Token inválido ou expirado' });
@@ -184,12 +178,131 @@ async function requireAuth(req, res, next) {
 
 // ── AUTH ROUTES ───────────────────────────────────────────────────────────────
 
-// Login direto (dev bypass) — sem Supabase Auth
-app.post('/api/auth/dev-login', (req, res) => {
+// Login com proteção brute-force
+app.post('/api/auth/login', async (req, res) => {
+  const email    = ((req.body && req.body.email)    || '').toLowerCase().trim();
+  const password = ((req.body && req.body.password) || '');
+  if (!email || !password) return res.status(400).json({ error: 'E-mail e senha são obrigatórios.' });
+
+  try {
+    if (adminDb) {
+      const { data: perfil } = await adminDb.from('perfis_usuarios')
+        .select('tentativas_falhas, bloqueado').eq('email', email).maybeSingle();
+      if (perfil?.bloqueado) {
+        return res.status(403).json({ error: 'Acesso bloqueado após 5 tentativas. Contate o administrador.' });
+      }
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      if (adminDb) {
+        const { data: perfil } = await adminDb.from('perfis_usuarios')
+          .select('tentativas_falhas').eq('email', email).maybeSingle();
+        const novas = (perfil?.tentativas_falhas || 0) + 1;
+        const bloquear = novas >= 5;
+        await adminDb.from('perfis_usuarios').upsert(
+          { email, tentativas_falhas: novas, bloqueado: bloquear, bloqueado_em: bloquear ? new Date().toISOString() : null },
+          { onConflict: 'email' }
+        );
+        if (bloquear) return res.status(403).json({ error: 'Acesso bloqueado após 5 tentativas. Contate o administrador.' });
+        const rest = 5 - novas;
+        return res.status(401).json({ error: `Senha incorreta. ${rest} tentativa${rest === 1 ? '' : 's'} restante${rest === 1 ? '' : 's'}.` });
+      }
+      return res.status(401).json({ error: 'E-mail ou senha incorretos.' });
+    }
+
+    if (!USERS[email]) {
+      return res.status(403).json({ error: 'E-mail não autorizado neste sistema.' });
+    }
+
+    if (adminDb) {
+      await adminDb.from('perfis_usuarios').upsert(
+        { email, tentativas_falhas: 0, bloqueado: false, bloqueado_em: null },
+        { onConflict: 'email' }
+      );
+    }
+
+    res.json({ session: data.session });
+  } catch (err) {
+    console.error('[/api/auth/login]', err);
+    res.status(500).json({ error: 'Erro interno ao fazer login.' });
+  }
+});
+
+// Cadastro restrito a e-mails pré-aprovados
+app.post('/api/auth/register', async (req, res) => {
+  const email    = ((req.body && req.body.email)    || '').toLowerCase().trim();
+  const password = ((req.body && req.body.password) || '');
+  if (!USERS[email]) return res.status(403).json({ error: 'E-mail não autorizado para cadastro neste sistema.' });
+
+  try {
+    if (adminDb) {
+      const { error } = await adminDb.auth.admin.createUser({ email, password, email_confirm: true });
+      if (error) {
+        if (error.message.toLowerCase().includes('already')) {
+          return res.status(409).json({ error: 'Este e-mail já possui cadastro. Faça o login.' });
+        }
+        throw error;
+      }
+      await adminDb.from('perfis_usuarios').upsert(
+        { email, tentativas_falhas: 0, bloqueado: false },
+        { onConflict: 'email' }
+      );
+      return res.json({ ok: true, message: 'Conta criada! Faça o login.' });
+    }
+    // Fallback sem service_role: signUp normal (Supabase envia confirmação por email)
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) {
+      if (error.message.toLowerCase().includes('already')) {
+        return res.status(409).json({ error: 'Este e-mail já possui cadastro. Faça o login.' });
+      }
+      throw error;
+    }
+    res.json({ ok: true, message: 'Verifique seu e-mail para confirmar o cadastro.' });
+  } catch (err) {
+    console.error('[/api/auth/register]', err);
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Esqueci a senha
+app.post('/api/auth/forgot-password', async (req, res) => {
   const email = ((req.body && req.body.email) || '').toLowerCase().trim();
-  const user = USERS[email];
-  if (!user) return res.status(403).json({ error: 'E-mail não autorizado neste sistema.' });
-  res.json({ email, ...user });
+  if (!email) return res.status(400).json({ error: 'E-mail é obrigatório.' });
+  try {
+    const origin = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',')[0].trim() : 'http://localhost:3000';
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${origin}/login.html#recovery`
+    });
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Listar usuários bloqueados (admin only)
+app.get('/api/auth/blocked-users', requireAuth, async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Apenas administradores.' });
+  if (!adminDb) return res.json([]);
+  const { data, error } = await adminDb.from('perfis_usuarios')
+    .select('email, tentativas_falhas, bloqueado_em')
+    .eq('bloqueado', true).order('bloqueado_em', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+// Desbloquear usuário (admin only)
+app.post('/api/auth/unblock', requireAuth, async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Apenas administradores.' });
+  if (!adminDb) return res.status(503).json({ error: 'SUPABASE_SERVICE_ROLE_KEY não configurada.' });
+  const email = ((req.body && req.body.email) || '').toLowerCase().trim();
+  if (!email) return res.status(400).json({ error: 'E-mail é obrigatório.' });
+  const { error } = await adminDb.from('perfis_usuarios')
+    .update({ tentativas_falhas: 0, bloqueado: false, bloqueado_em: null }).eq('email', email);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
 });
 
 app.get('/api/auth/me', requireAuth, (req, res) => res.json(req.user));
