@@ -174,6 +174,7 @@
 
   <script>
     let _sb = null;
+    let _isRecovery = window.location.hash.includes('type=recovery');
 
     // ── Supabase client ────────────────────────────────────────────────────────
     async function initSb() {
@@ -182,13 +183,17 @@
       _sb = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey, {
         auth: { storage: window.sessionStorage, autoRefreshToken: true, persistSession: true, detectSessionInUrl: true }
       });
-      // Detectar sessão de recuperação de senha via evento do SDK
       _sb.auth.onAuthStateChange((event, _session) => {
         if (event === 'PASSWORD_RECOVERY') {
+          _isRecovery = true;
           irPara('step-nova-senha');
           document.getElementById('lbl-subtitle').textContent = 'Redefinição de senha';
         }
       });
+      if (_isRecovery) {
+        irPara('step-nova-senha');
+        document.getElementById('lbl-subtitle').textContent = 'Redefinição de senha';
+      }
       return _sb;
     }
 
@@ -379,8 +384,10 @@
 
     // Verificar sessão existente ao carregar
     initSb().then(async sb => {
-      // Limpar qualquer sessão dev residual
       try { localStorage.removeItem('blingDevSession'); } catch {}
+
+      // Se é fluxo de recovery, não redirecionar — deixar o usuário definir a nova senha
+      if (_isRecovery) return;
 
       const { data: { session } } = await sb.auth.getSession();
       if (session) {
